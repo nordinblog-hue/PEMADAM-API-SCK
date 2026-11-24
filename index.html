@@ -127,6 +127,34 @@
         </div>
     </div>
 
+    <!-- Custom Service Completion Modal (Manual Expiry Date Input) -->
+    <div id="complete-service-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4 no-print">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all">
+            <div class="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 mb-3">
+                <i class="fa-solid fa-circle-check text-2xl"></i>
+                <h3 id="complete-modal-title" class="text-lg font-bold text-slate-900 dark:text-white">Sahkan Siap Servis</h3>
+            </div>
+            <p id="complete-modal-desc" class="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed"></p>
+            <div class="mb-5 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                <label for="complete-new-expiry" class="block text-xs font-bold uppercase text-slate-700 dark:text-slate-200">
+                    Tarikh Tamat Tempoh Baharu (Mengikut Pelekat Tong):
+                </label>
+                <input type="date" id="complete-new-expiry" class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                    * Tiada kiraan auto (+1 tahun). Sila pilih tarikh sebenar pada tong yang telah sampai, atau biarkan kosong untuk isi kemudian.
+                </p>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeCompleteServiceModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition">
+                    Batal
+                </button>
+                <button type="button" id="complete-confirm-btn" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition">
+                    Ya, Sahkan Pulang
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Top Navigation Header -->
     <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1879,26 +1907,42 @@
             const item = extinguishers.find(x => x.id === id);
             if (!item) return;
 
-            const today = new Date();
-            const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
-            const yyyy = nextYear.getFullYear();
-            const mm = String(nextYear.getMonth() + 1).padStart(2, '0');
-            const dd = String(nextYear.getDate()).padStart(2, '0');
-            const defaultNewExpiry = `${yyyy}-${mm}-${dd}`;
+            const modal = document.getElementById('complete-service-modal');
+            const titleEl = document.getElementById('complete-modal-title');
+            const descEl = document.getElementById('complete-modal-desc');
+            const dateInput = document.getElementById('complete-new-expiry');
+            const confirmBtn = document.getElementById('complete-confirm-btn');
 
-            openConfirmDialog(
-                `Sahkan Siap Servis - No. ${item.no} (${item.kawasan})?`,
-                `Tong asal akan dipulangkan ke lokasi (${item.tempat} Pt.${item.point}), status Temporary/Kosong dipadam, pilihan Refill/2in1 dibersihkan, dan tarikh tamat tempoh dikemaskini ke ${dd}/${mm}/${yyyy} (+1 Tahun).`,
-                async () => {
-                    item.locationStatus = 'NORMAL';
-                    item.workMode = 'AUTO';
-                    item.expiry = defaultNewExpiry;
-                    selectedForRFQ.delete(item.id);
-                    refreshAllViews();
-                    await persistData(true);
-                    showToast(`Selesai! No. ${item.no} (${item.kawasan}) kini aktif semula hingga ${dd}/${mm}/${yyyy}.`, 'success');
+            titleEl.textContent = `Sahkan Siap Servis - No. ${item.no} (${item.kawasan})`;
+            descEl.textContent = `Tong asal akan dipulangkan ke lokasi (${item.tempat} Pt.${item.point}), status Temporary/Kosong dipadam, dan pilihan Servis/Refill/2in1 dibersihkan.`;
+            dateInput.value = '';
+
+            confirmBtn.onclick = async () => {
+                const enteredExpiry = dateInput.value;
+                item.locationStatus = 'NORMAL';
+                item.workMode = 'AUTO';
+                if (enteredExpiry) {
+                    item.expiry = enteredExpiry;
                 }
-            );
+                selectedForRFQ.delete(item.id);
+                closeCompleteServiceModal();
+                refreshAllViews();
+                await persistData(true);
+
+                const expiryMsg = enteredExpiry
+                    ? `Tarikh tamat tempoh dikemaskini ke ${formatDisplayDate(enteredExpiry)}.`
+                    : `Tarikh tamat tempoh tidak diubah secara automatik (sila kemaskini bila tong sampai).`;
+                showToast(`Selesai! No. ${item.no} (${item.kawasan}) telah dipulangkan. ${expiryMsg}`, 'success');
+            };
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCompleteServiceModal() {
+            const modal = document.getElementById('complete-service-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         function renderTable() {
