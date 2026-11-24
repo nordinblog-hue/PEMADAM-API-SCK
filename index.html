@@ -394,18 +394,18 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
-                                <th class="py-3.5 px-4 font-bold">Pilih RFQ</th>
-                                <th class="py-3.5 px-3 font-bold">No.</th>
-                                <th class="py-3.5 px-4 font-bold">Kawasan</th>
-                                <th class="py-3.5 px-4 font-bold">Tempat & Point</th>
-                                <th class="py-3.5 px-3 font-bold">Berat</th>
-                                <th class="py-3.5 px-4 font-bold">Tarikh Tamat</th>
-                                <th class="py-3.5 px-4 font-bold">Status Tarikh</th>
-                                <th class="py-3.5 px-4 font-bold">Pilihan Kerja (Tick Refill / 2-in-1)</th>
-                                <th class="py-3.5 px-4 font-bold text-right">Tindakan</th>
-                            </tr>
-                        </thead>
+                        <tr class="bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                            <th class="py-3.5 px-4 font-bold">Pilih RFQ</th>
+                            <th class="py-3.5 px-3 font-bold">No.</th>
+                            <th class="py-3.5 px-4 font-bold">Kawasan</th>
+                            <th class="py-3.5 px-4 font-bold">Tempat & Point</th>
+                            <th class="py-3.5 px-3 font-bold">Berat</th>
+                            <th class="py-3.5 px-4 font-bold">Tarikh Tamat</th>
+                            <th class="py-3.5 px-4 font-bold">Status Tarikh</th>
+                            <th class="py-3.5 px-4 font-bold">Pilihan Kerja (Tick Servis / Refill / 2in1)</th>
+                            <th class="py-3.5 px-4 font-bold text-right">Tindakan</th>
+                        </tr>
+                    </thead>
                         <tbody id="extinguisher-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                             <!-- Populated by JavaScript -->
                         </tbody>
@@ -812,29 +812,37 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Tarikh Tamat Tempoh (Kosongkan jika tiada)</label>
+                    <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Tarikh Tamat Tempoh</label>
                     <input type="date" id="field-expiry" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
                 </div>
 
-                <!-- Pilihan Tick Status Tong Digunakan: Refill Sahaja vs Refill & Servis (2-in-1) -->
-                <div class="p-4 rounded-xl bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/70 space-y-3">
-                    <p class="text-xs font-extrabold uppercase tracking-wider text-orange-900 dark:text-orange-200">
-                        Status Penggunaan Tong (Jika Telah Dipakai):
+                <!-- Pilihan Tick Status Kerja: Servis Manual vs Refill Sahaja vs Refill & Servis (2-in-1) -->
+                <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3">
+                    <p class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                        Pilihan Kerja Khas (Jika Perlu Tindakan Awal / Telah Digunakan):
                     </p>
+
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="field-manual-service" onchange="syncModalWorkCheckboxes('service')" class="w-5 h-5 mt-0.5 rounded text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <span class="text-sm font-bold text-blue-700 dark:text-blue-300 block">Servis Sahaja (Manual)</span>
+                            <span class="text-xs text-slate-600 dark:text-slate-300">Tandakan jika mahu hantar servis walaupun tarikh tamat tempoh masih lama.</span>
+                        </div>
+                    </label>
                     
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" id="field-is-used" onchange="syncModalWorkCheckboxes('used')" class="w-5 h-5 mt-0.5 rounded text-orange-600 focus:ring-orange-500">
                         <div>
-                            <span class="text-sm font-bold text-slate-900 dark:text-white block">Tong Sudah Digunakan (Perlu Refill)</span>
-                            <span class="text-xs text-slate-600 dark:text-slate-300">Tandakan jika tong telah digunakan/kosong.</span>
+                            <span class="text-sm font-bold text-orange-700 dark:text-orange-300 block">Tong Sudah Digunakan (Refill Sahaja)</span>
+                            <span class="text-xs text-slate-600 dark:text-slate-300">Tandakan jika tong telah digunakan/kosong dan hanya perlu refill.</span>
                         </div>
                     </label>
 
-                    <label class="flex items-start gap-3 cursor-pointer pl-4 border-l-2 border-purple-400">
+                    <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" id="field-also-service" onchange="syncModalWorkCheckboxes('both')" class="w-5 h-5 mt-0.5 rounded text-purple-600 focus:ring-purple-500">
                         <div>
-                            <span class="text-sm font-bold text-purple-800 dark:text-purple-300 block">Sekaligus Minta Servis (Refill & Servis 2-in-1)</span>
-                            <span class="text-xs text-slate-600 dark:text-slate-300">Tandakan jika mahu kontraktor buat Refill dan Servis tahunan sekaligus untuk tong ini.</span>
+                            <span class="text-sm font-bold text-purple-700 dark:text-purple-300 block">Refill & Servis (2-in-1)</span>
+                            <span class="text-xs text-slate-600 dark:text-slate-300">Tandakan jika mahu kontraktor buat Refill dan Servis tahunan sekaligus.</span>
                         </div>
                     </label>
                 </div>
@@ -1148,6 +1156,8 @@
                 customRowHighlight = 'bg-purple-50/75 dark:bg-purple-950/25';
             } else if (workMode === 'REFILL_ONLY') {
                 customRowHighlight = 'bg-orange-50/75 dark:bg-orange-950/25';
+            } else if (workMode === 'SERVICE_ONLY') {
+                customRowHighlight = 'bg-blue-50/75 dark:bg-blue-950/25';
             }
 
             if (!expiryDateStr) {
@@ -1454,6 +1464,8 @@
                     bothCount++;
                 } else if (mode === 'REFILL_ONLY') {
                     refillOnlyCount++;
+                } else if (mode === 'SERVICE_ONLY') {
+                    serviceOnlyCount++;
                 } else {
                     if (st.code === 'EXPIRED' || st.code === 'REMINDER') {
                         serviceOnlyCount++;
@@ -1540,8 +1552,10 @@
                 selectedForRFQ.add(item.id);
                 if (targetMode === 'REFILL_AND_SERVICE') {
                     showToast(`No. ${item.no} (${item.kawasan}) ditanda "Refill & Servis (2-in-1)" & dikira dalam Standby 50%.`, 'success');
-                } else {
+                } else if (targetMode === 'REFILL_ONLY') {
                     showToast(`No. ${item.no} (${item.kawasan}) ditanda "Refill Sahaja" & dikira dalam Standby 50%.`, 'warning');
+                } else if (targetMode === 'SERVICE_ONLY') {
+                    showToast(`No. ${item.no} (${item.kawasan}) ditanda "Servis Sahaja" & dikira dalam Standby 50%.`, 'info');
                 }
             }
 
@@ -1578,7 +1592,7 @@
 
                 let matchStatus = true;
                 if (statusFilter === 'DUE_ALL') {
-                    matchStatus = (mode === 'AUTO' && (st.code === 'EXPIRED' || st.code === 'REMINDER'));
+                    matchStatus = (mode === 'SERVICE_ONLY' || (mode === 'AUTO' && (st.code === 'EXPIRED' || st.code === 'REMINDER')));
                 } else if (statusFilter === 'REFILL_ONLY') {
                     matchStatus = (mode === 'REFILL_ONLY');
                 } else if (statusFilter === 'REFILL_AND_SERVICE') {
@@ -1605,23 +1619,28 @@
 
                 let weightBadge = `<span class="text-xs text-slate-400 italic">Tiada</span>`;
                 if (item.berat === '9 KG') {
-                    weightBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">9 KG</span>`;
+                    weightBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-slate-800 text-white dark:bg-slate-700">9 KG</span>`;
                 } else if (item.berat === '2 KG') {
-                    weightBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-100 dark:bg-orange-950/70 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800">2 KG</span>`;
+                    weightBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-amber-600 text-white">2 KG</span>`;
                 }
 
+                const isServiceChecked = mode === 'SERVICE_ONLY';
                 const isRefillChecked = mode === 'REFILL_ONLY';
                 const isBothChecked = mode === 'REFILL_AND_SERVICE';
 
                 const workTickControls = `
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition select-none ${isServiceChecked ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'}">
+                            <input type="checkbox" ${isServiceChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'SERVICE_ONLY')" class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0">
+                            <span>Servis</span>
+                        </label>
                         <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition select-none ${isRefillChecked ? 'bg-orange-600 text-white border-orange-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-orange-400'}">
                             <input type="checkbox" ${isRefillChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_ONLY')" class="w-3.5 h-3.5 rounded text-orange-600 focus:ring-0">
                             <span>Refill</span>
                         </label>
                         <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition select-none ${isBothChecked ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-purple-400'}">
                             <input type="checkbox" ${isBothChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_AND_SERVICE')" class="w-3.5 h-3.5 rounded text-purple-600 focus:ring-0">
-                            <span>Refill & Servis (2in1)</span>
+                            <span>2in1</span>
                         </label>
                     </div>
                 `;
@@ -1700,7 +1719,7 @@
             extinguishers.forEach(item => {
                 const st = getStatusInfo(item);
                 const mode = item.workMode || 'AUTO';
-                if (st.code === 'EXPIRED' || st.code === 'REMINDER' || mode === 'REFILL_ONLY' || mode === 'REFILL_AND_SERVICE') {
+                if (st.code === 'EXPIRED' || st.code === 'REMINDER' || mode === 'SERVICE_ONLY' || mode === 'REFILL_ONLY' || mode === 'REFILL_AND_SERVICE') {
                     selectedForRFQ.add(item.id);
                 }
             });
@@ -1903,23 +1922,25 @@
                 });
             }
 
-            // 4. Temporary / Standby FE 50% (hanya papar jika toggle aktif & > 0)
-            if (includeStandby && (counts.standby9 > 0 || counts.standby2 > 0)) {
-                const lines = [];
-                if (counts.standby9 > 0) lines.push(`- 9 KG: *${counts.standby9} Nos*`);
-                if (counts.standby2 > 0) lines.push(`- 2 KG: *${counts.standby2} Nos*`);
-                sections.push({
-                    title: `Temporary / Standby FE (50% - ${counts.standbyTotal} Nos):`,
-                    lines
-                });
-            }
-
             let msg = `Salam tuan, mohon sebut harga (quotation) untuk pemadam api di *SCK Wooden Industries Sdn Bhd*:\n\n`;
 
-            // Susun nombor turutan kategori secara dinamik (1., 2., 3., ...)
+            // Susun nombor turutan kategori quotation secara dinamik (1., 2., 3., ...)
             sections.forEach((sec, idx) => {
                 msg += `*${idx + 1}. ${sec.title}*\n${sec.lines.join('\n')}\n\n`;
             });
+
+            // Asingkan bahagian permintaan unit Standby FE (50%) supaya jelas ia adalah tong pinjaman sementara
+            if (includeStandby && (counts.standby9 > 0 || counts.standby2 > 0)) {
+                const standbyLines = [];
+                if (counts.standby9 > 0) standbyLines.push(`- 9 KG: *${counts.standby9} Nos*`);
+                if (counts.standby2 > 0) standbyLines.push(`- 2 KG: *${counts.standby2} Nos*`);
+
+                msg += `----------------------------------------\n`;
+                msg += `*Permintaan Tong Standby Sementara (50% - ${counts.standbyTotal} Nos):*\n`;
+                msg += `Mohon pihak tuan sediakan unit *Temporary / Standby FE* di bawah sepanjang tempoh tong kami dibawa keluar:\n`;
+                msg += `${standbyLines.join('\n')}\n`;
+                msg += `----------------------------------------\n\n`;
+            }
 
             if (pickupDate) {
                 msg += `*Cadangan Tarikh Ambil Tong:* ${formatDisplayDate(pickupDate)}\n\n`;
@@ -1987,13 +2008,19 @@
          * 8. ADD / EDIT / DELETE / RESET ITEM HANDLERS
          */
         function syncModalWorkCheckboxes(source) {
+            const serviceCb = document.getElementById('field-manual-service');
             const usedCb = document.getElementById('field-is-used');
             const bothCb = document.getElementById('field-also-service');
 
-            if (source === 'both' && bothCb.checked) {
-                usedCb.checked = true;
-            } else if (source === 'used' && !usedCb.checked) {
+            if (source === 'service' && serviceCb.checked) {
+                usedCb.checked = false;
                 bothCb.checked = false;
+            } else if (source === 'used' && usedCb.checked) {
+                serviceCb.checked = false;
+                bothCb.checked = false;
+            } else if (source === 'both' && bothCb.checked) {
+                serviceCb.checked = false;
+                usedCb.checked = false;
             }
         }
 
@@ -2016,12 +2043,14 @@
                 document.getElementById('field-point').value = item.point;
                 document.getElementById('field-berat').value = item.berat;
                 document.getElementById('field-expiry').value = item.expiry;
-                document.getElementById('field-is-used').checked = (mode === 'REFILL_ONLY' || mode === 'REFILL_AND_SERVICE');
+                document.getElementById('field-manual-service').checked = (mode === 'SERVICE_ONLY');
+                document.getElementById('field-is-used').checked = (mode === 'REFILL_ONLY');
                 document.getElementById('field-also-service').checked = (mode === 'REFILL_AND_SERVICE');
                 document.getElementById('field-notes').value = item.notes || '';
             } else {
                 title.textContent = 'Tambah Unit Pemadam Api Baru';
                 document.getElementById('edit-item-id').value = '';
+                document.getElementById('field-manual-service').checked = false;
                 document.getElementById('field-is-used').checked = false;
                 document.getElementById('field-also-service').checked = false;
             }
@@ -2039,14 +2068,17 @@
         async function saveItemForm(e) {
             e.preventDefault();
             const editId = document.getElementById('edit-item-id').value;
+            const isManualServiceChecked = document.getElementById('field-manual-service').checked;
             const isUsedChecked = document.getElementById('field-is-used').checked;
             const alsoServiceChecked = document.getElementById('field-also-service').checked;
 
             let workMode = 'AUTO';
-            if (isUsedChecked && alsoServiceChecked) {
+            if (alsoServiceChecked) {
                 workMode = 'REFILL_AND_SERVICE';
             } else if (isUsedChecked) {
                 workMode = 'REFILL_ONLY';
+            } else if (isManualServiceChecked) {
+                workMode = 'SERVICE_ONLY';
             }
 
             const newRecord = {
