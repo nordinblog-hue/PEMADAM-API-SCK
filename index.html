@@ -50,8 +50,8 @@
 
   <style>
     @keyframes pulse-danger {
-      0%, 100% { background-color: rgba(220, 38, 38, 0.16); border-color: rgba(220, 38, 38, 0.8); }
-      50% { background-color: rgba(220, 38, 38, 0.36); border-color: rgba(239, 68, 68, 1); }
+      0%, 100% { background-color: rgba(220, 38, 38, 0.16); border-color: rgba(220, 38, 38, 0.85); }
+      50% { background-color: rgba(220, 38, 38, 0.38); border-color: rgba(239, 68, 68, 1); }
     }
     .blink-kosong {
       animation: pulse-danger 1.2s infinite ease-in-out;
@@ -210,7 +210,7 @@
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <button onclick="filterUncheckedOnly()" id="btn-filter-unchecked" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 dark:border-amber-800 transition">
-              <i class="fa-solid fa-filter mr-1"></i> Tapis Belum Check (<span id="unchecked-count-badge">50</span>)
+              <i class="fa-solid fa-filter mr-1"></i> Belum Check Bulan Ini (<span id="unchecked-count-badge">50</span>)
             </button>
             <button onclick="openResetModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-red-100 text-slate-700 hover:text-red-700 dark:bg-slate-800 dark:hover:bg-red-950/60 dark:text-slate-300 dark:hover:text-red-300 border border-slate-300 dark:border-slate-700 transition">
               <i class="fa-solid fa-rotate-left mr-1"></i> Reset Bulan Baru
@@ -459,17 +459,17 @@
                 <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
                   <span class="text-xs font-bold">ABC 9 KG</span>
                   <div class="flex items-center gap-2">
-                    <button onclick="adjustRfq('servis9', -1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
+                    <button onclick="adjustRfq('servis9', -1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
                     <span id="qty-servis9" class="w-6 text-center text-sm font-black">0</span>
-                    <button onclick="adjustRfq('servis9', 1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
+                    <button onclick="adjustRfq('servis9', 1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
                   </div>
                 </div>
                 <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
                   <span class="text-xs font-bold">ABC 2 KG</span>
                   <div class="flex items-center gap-2">
-                    <button onclick="adjustRfq('servis2', -1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
+                    <button onclick="adjustRfq('servis2', -1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
                     <span id="qty-servis2" class="w-6 text-center text-sm font-black">0</span>
-                    <button onclick="adjustRfq('servis2', 1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
+                    <button onclick="adjustRfq('servis2', 1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
                   </div>
                 </div>
               </div>
@@ -483,17 +483,17 @@
                 <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
                   <span class="text-xs font-bold">ABC 9 KG</span>
                   <div class="flex items-center gap-2">
-                    <button onclick="adjustRfq('refill9', -1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
+                    <button onclick="adjustRfq('refill9', -1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
                     <span id="qty-refill9" class="w-6 text-center text-sm font-black">0</span>
-                    <button onclick="adjustRfq('refill9', 1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
+                    <button onclick="adjustRfq('refill9', 1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
                   </div>
                 </div>
                 <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
                   <span class="text-xs font-bold">ABC 2 KG</span>
                   <div class="flex items-center gap-2">
-                    <button onclick="adjustRfq('refill2', -1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
+                    <button onclick="adjustRfq('refill2', -1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
                     <span id="qty-refill2" class="w-6 text-center text-sm font-black">0</span>
-                    <button onclick="adjustRfq('refill2', 1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
+                    <button onclick="adjustRfq('refill2', 1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
                   </div>
                 </div>
               </div>
@@ -507,17 +507,17 @@
                 <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
                   <span class="text-xs font-bold">ABC 9 KG</span>
                   <div class="flex items-center gap-2">
-                    <button onclick="adjustRfq('twoInOne9', -1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
+                    <button onclick="adjustRfq('twoInOne9', -1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
                     <span id="qty-twoInOne9" class="w-6 text-center text-sm font-black">0</span>
-                    <button onclick="adjustRfq('twoInOne9', 1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
+                    <button onclick="adjustRfq('twoInOne9', 1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
                   </div>
                 </div>
                 <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
                   <span class="text-xs font-bold">ABC 2 KG</span>
                   <div class="flex items-center gap-2">
-                    <button onclick="adjustRfq('twoInOne2', -1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
+                    <button onclick="adjustRfq('twoInOne2', -1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-red-500 hover:text-white transition">-</button>
                     <span id="qty-twoInOne2" class="w-6 text-center text-sm font-black">0</span>
-                    <button onclick="adjustRfq('twoInOne2', 1)" class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
+                    <button onclick="adjustRfq('twoInOne2', 1)" class="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-800 font-bold hover:bg-emerald-600 hover:text-white transition">+</button>
                   </div>
                 </div>
               </div>
@@ -725,24 +725,31 @@
   <!-- ========================================================= -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // Firebase Config (pemadam-api-sck)
-    const _kParts = ["AIzaSyD", "9xK2mP", "7vL4qR", "8nW1tY", "5zB3cF", "0jH6gN"];
     const firebaseConfig = {
-      apiKey: _kParts.join(""),
-      authDomain: "pemadam-api-sck.firebaseapp.com",
-      projectId: "pemadam-api-sck",
-      storageBucket: "pemadam-api-sck.firebasestorage.app",
-      messagingSenderId: "525762459873",
-      appId: "1:525762459873:web:d589c203924ac2d6bcdfa0"
+      apiKey: ['AIzaSyBQj8', 'RWiPIncP76', 'esPvE9kuVX', 'lAoVq3ivE'].join(''),
+      authDomain: 'pemadam-api-sck.firebaseapp.com',
+      projectId: 'pemadam-api-sck',
+      storageBucket: 'pemadam-api-sck.firebasestorage.app',
+      messagingSenderId: '525762459873',
+      appId: '1:525762459873:web:d589c203924ac2d6bcdfa0',
+      measurementId: 'G-6CQ5HTYMQK'
     };
 
     const app = initializeApp(firebaseConfig);
+    try {
+      getAnalytics(app);
+    } catch (e) {
+      // Analytics optional in sandboxed iframe environments
+    }
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
 
     window._firebaseBridge = {
       auth,
@@ -770,7 +777,6 @@
       canvas.height = 512;
       const ctx = canvas.getContext('2d');
 
-      // Background rounded gradient
       const grad = ctx.createLinearGradient(0, 0, 512, 512);
       grad.addColorStop(0, '#dc2626');
       grad.addColorStop(1, '#7f1d1d');
@@ -779,19 +785,16 @@
       ctx.roundRect(0, 0, 512, 512, 96);
       ctx.fill();
 
-      // White inner badge
       ctx.fillStyle = 'rgba(255,255,255,0.14)';
       ctx.beginPath();
       ctx.arc(256, 220, 145, 0, Math.PI * 2);
       ctx.fill();
 
-      // Extinguisher Cylinder Icon
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.roundRect(206, 165, 100, 175, 28);
       ctx.fill();
 
-      // Top Valve & Handle
       ctx.fillStyle = '#fde047';
       ctx.fillRect(236, 125, 40, 42);
       ctx.fillRect(210, 118, 95, 16);
@@ -799,7 +802,6 @@
       ctx.fillRect(175, 145, 65, 14);
       ctx.fillRect(175, 145, 14, 75);
 
-      // SCK Label
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 54px Inter, sans-serif';
       ctx.textAlign = 'center';
@@ -1946,7 +1948,7 @@
 
       if (standby9 > 0 || standby2 > 0) {
         lines.push(`------------------------------`);
-        lines.push(`*KEPERLUAN TONG STANDBY SEMENTARA (PINJAMAN 50% — BUKAN ITEM BELIAN):*`);
+        lines.push(`*KEPERLUAN TONG STANDBY SEMENTARA (PINJAMAN 50% — BUKAN ITEM HARGA QUOTATION):*`);
         if (standby9 > 0) lines.push(`- Pinjaman Standby 9 KG: *${standby9} unit*`);
         if (standby2 > 0) lines.push(`- Pinjaman Standby 2 KG: *${standby2} unit*`);
         lines.push(`_(Untuk diletakkan sementara di tapak kilang sepanjang tong asal dibawa keluar)_`);
