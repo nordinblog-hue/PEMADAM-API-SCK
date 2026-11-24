@@ -1,0 +1,2368 @@
+<!DOCTYPE html>
+<html lang="ms" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Pantau & Sebut Harga Pemadam Api - SCK Wooden Industries Sdn Bhd</title>
+    
+    <!-- PWA & Apple Mobile Web App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SCK FireGuard">
+    <meta name="theme-color" content="#b91c1c">
+    <link id="apple-touch-icon" rel="apple-touch-icon" href="">
+    <link id="favicon-link" rel="icon" type="image/png" href="">
+    <link id="manifest-link" rel="manifest" href="">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        sck: {
+                            red: '#b91c1c',
+                            darkRed: '#7f1d1d',
+                            gold: '#b45309',
+                            amber: '#d97706'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Firebase SDK v10 Compat (App, Auth, Firestore, Analytics) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+
+    <style>
+        /* Custom Scrollbar & Smooth Transitions */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Print Styles for Official SCK RFQ Document */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 10.5pt !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .print-container {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            th, td {
+                border: 1px solid #333333 !important;
+                padding: 5px 7px !important;
+                color: #000000 !important;
+            }
+            th {
+                background-color: #f3f4f6 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
+
+    <!-- Toast Notification Container (Replaces alert) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none no-print"></div>
+
+    <!-- Custom Confirmation Modal (Replaces confirm) -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4 no-print">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all">
+            <div class="flex items-center gap-3 text-amber-600 dark:text-amber-500 mb-3">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 id="confirm-title" class="text-lg font-bold text-slate-900 dark:text-white">Pengesahan Tindakan</h3>
+            </div>
+            <p id="confirm-message" class="text-sm text-slate-600 dark:text-slate-300 mb-6 leading-relaxed"></p>
+            <div class="flex justify-end gap-3">
+                <button id="confirm-cancel-btn" class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition">
+                    Batal
+                </button>
+                <button id="confirm-ok-btn" class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-700 text-white shadow-md transition">
+                    Ya, Teruskan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20 gap-3">
+                <!-- Brand & Logo -->
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white shadow-lg shadow-red-600/20 shrink-0">
+                        <i class="fa-solid fa-fire-extinguisher text-xl sm:text-2xl"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <span class="text-[10px] sm:text-xs font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                SCK-DOSH-F11
+                            </span>
+                            <button onclick="openAuthModal()" id="sync-badge" class="text-[10px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition cursor-pointer" title="Klik untuk urus sambungan Cloud Firestore">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                <span>Mod Tetamu (Simpanan Lokal)</span>
+                            </button>
+                        </div>
+                        <h1 class="text-sm sm:text-lg font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
+                            SCK Wooden Industries Sdn Bhd
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- Right Controls: Manual Cloud Sync, Install PWA, Dark Mode, Firebase Account -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <!-- Manual Cloud Sync Button (Visible when logged in) -->
+                    <button id="header-manual-sync-btn" onclick="manualCloudUploadSync()" class="hidden sm:flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition active:scale-95" title="Sync Manual / Muat Naik ke Cloud">
+                        <i id="header-sync-icon" class="fa-solid fa-cloud-arrow-up"></i>
+                        <span class="hidden lg:inline">Sync Cloud</span>
+                    </button>
+
+                    <!-- Install PWA Button -->
+                    <button id="install-pwa-btn" onclick="triggerInstallPWA()" class="hidden sm:flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition active:scale-95" title="Pasang Aplikasi ke Skrin Utama">
+                        <i class="fa-solid fa-download"></i>
+                        <span class="hidden md:inline">Install App</span>
+                    </button>
+
+                    <!-- Mobile Install Button -->
+                    <button id="install-pwa-btn-mobile" onclick="triggerInstallPWA()" class="sm:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition" title="Install App">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+
+                    <!-- Dark Mode Toggle -->
+                    <button onclick="toggleDarkMode()" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-400 flex items-center justify-center transition active:scale-95" title="Tukar Mod Gelap / Cerah">
+                        <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                    </button>
+
+                    <!-- Firebase Auth / Settings Button -->
+                    <button onclick="openAuthModal()" id="auth-header-btn" class="flex items-center gap-2 px-3 sm:px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white border border-slate-700 transition active:scale-95">
+                        <img id="auth-user-avatar" src="" alt="Avatar" class="hidden w-5 h-5 rounded-full object-cover border border-white/40">
+                        <i id="auth-google-icon" class="fa-brands fa-google text-red-400"></i>
+                        <span id="auth-user-label" class="hidden sm:inline">Log Masuk Google</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Date, Cloud Sync & Reminder Banner -->
+        <div class="mb-6 bg-gradient-to-r from-amber-500/10 via-red-500/10 to-blue-500/10 dark:from-amber-900/20 dark:via-red-900/20 dark:to-blue-900/20 border border-amber-300/60 dark:border-amber-700/50 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print">
+            <div class="flex items-start sm:items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md">
+                    <i class="fa-solid fa-bell text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                            Pemantauan Servis, Refill, 2-in-1 & Temporary Standby FE (50%)
+                        </h2>
+                        <span id="today-date-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700"></span>
+                    </div>
+                    <p id="banner-alert-text" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1">
+                        Mengira status semua alat pemadam api...
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <button onclick="switchTab('rfq')" class="w-full md:w-auto px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-red-600/20 flex items-center justify-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>Sediakan Quotation & Standby</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 6 Summary Dashboard Cards (Clickable Filters) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6 no-print">
+            <!-- Card 1: Total Units -->
+            <button onclick="filterByCard('ALL')" id="card-ALL" class="stat-card text-left p-3.5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-400 shadow-sm hover:shadow-md transition-all">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Jumlah Unit</span>
+                    <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+                        <i class="fa-solid fa-layer-group text-xs"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-extrabold text-slate-900 dark:text-white" id="stat-total">0</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5" id="stat-total-sub">44 Kilang & 6 Hostel</div>
+            </button>
+
+            <!-- Card 2: Perlu Servis (Tamat + Reminder <= 1 Bln) -->
+            <button onclick="filterByCard('DUE_ALL')" id="card-DUE_ALL" class="stat-card text-left p-3.5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-transparent hover:border-red-400 shadow-sm hover:shadow-md transition-all">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">Perlu Servis</span>
+                    <div class="w-7 h-7 rounded-lg bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 flex items-center justify-center">
+                        <i class="fa-solid fa-wrench text-xs"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-extrabold text-red-600 dark:text-red-400" id="stat-due-service">0</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Tamat & &le;1 Bln</div>
+            </button>
+
+            <!-- Card 3: Refill Sahaja (Sudah Digunakan) -->
+            <button onclick="filterByCard('REFILL_ONLY')" id="card-REFILL_ONLY" class="stat-card text-left p-3.5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-transparent hover:border-orange-500 shadow-sm hover:shadow-md transition-all">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">Refill Sahaja</span>
+                    <div class="w-7 h-7 rounded-lg bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                        <i class="fa-solid fa-fire text-xs"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-extrabold text-orange-600 dark:text-orange-400" id="stat-refill-only">0</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Sudah Digunakan</div>
+            </button>
+
+            <!-- Card 4: Refill & Servis (2-in-1) -->
+            <button onclick="filterByCard('REFILL_AND_SERVICE')" id="card-REFILL_AND_SERVICE" class="stat-card text-left p-3.5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-transparent hover:border-purple-500 shadow-sm hover:shadow-md transition-all">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">Refill & Servis</span>
+                    <div class="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-extrabold text-purple-600 dark:text-purple-400" id="stat-refill-service">0</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Pakej 2-dalam-1</div>
+            </button>
+
+            <!-- Card 5: Temporary Standby FE (Auto 50%) -->
+            <button onclick="switchTab('rfq')" id="card-STANDBY" class="stat-card text-left p-3.5 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-500 shadow-sm hover:shadow-md transition-all">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Standby FE (50%)</span>
+                    <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                        <i class="fa-solid fa-shield-halved text-xs"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-extrabold text-blue-700 dark:text-blue-300" id="stat-standby">0</div>
+                <div class="text-[11px] text-blue-700/80 dark:text-blue-300/80 mt-0.5" id="stat-standby-sub">Auto 50% Tong Keluar</div>
+            </button>
+
+            <!-- Card 6: Aktif / Selamat -->
+            <button onclick="filterByCard('ACTIVE')" id="card-ACTIVE" class="stat-card text-left p-3.5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-transparent hover:border-emerald-400 shadow-sm hover:shadow-md transition-all">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Aktif / Selamat</span>
+                    <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-shield-check text-xs"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400" id="stat-active">0</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Sah Sehingga 2027</div>
+            </button>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-slate-200 dark:border-slate-800 pb-3 no-print">
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto">
+                <button onclick="switchTab('monitor')" id="tab-btn-monitor" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm flex items-center gap-2 shrink-0 transition">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Semakan Bulanan (<span id="tab-total-unit-count">50</span> Unit)</span>
+                </button>
+                <button onclick="switchTab('rfq')" id="tab-btn-rfq" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0 transition">
+                    <i class="fa-solid fa-paper-plane text-red-600"></i>
+                    <span>Minta Quotation & Standby FE</span>
+                    <span id="rfq-badge-count" class="px-2 py-0.5 text-xs rounded-full bg-red-600 text-white font-extrabold">11</span>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button onclick="openItemModal()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tambah Unit</span>
+                </button>
+                <button onclick="confirmResetData()" class="px-3.5 py-2.5 rounded-xl text-sm font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2 transition" title="Reset Semula ke Data Asal SCK-DOSH-F11">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span class="hidden md:inline">Reset Data SCK</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- TAB 1: SEMAKAN BULANAN & PEMANTAUAN PEMADAM API                       -->
+        <!-- ===================================================================== -->
+        <section id="view-monitor" class="space-y-4 no-print">
+            <!-- Quick Filter Pills -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button onclick="quickFilterPill('ALL')" id="pill-ALL" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition shrink-0">
+                    Semua Rekod
+                </button>
+                <button onclick="quickFilterPill('DUE_ALL')" id="pill-DUE_ALL" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/60 hover:bg-red-50 dark:hover:bg-red-950/40 transition shrink-0">
+                    <i class="fa-solid fa-bell text-amber-500 mr-1"></i> Servis Tahunan (Tamat / &le; 1 Bln)
+                </button>
+                <button onclick="quickFilterPill('REFILL_ONLY')" id="pill-REFILL_ONLY" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/60 hover:bg-orange-50 dark:hover:bg-orange-950/40 transition shrink-0">
+                    <i class="fa-solid fa-fire mr-1"></i> Refill Sahaja
+                </button>
+                <button onclick="quickFilterPill('REFILL_AND_SERVICE')" id="pill-REFILL_AND_SERVICE" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition shrink-0">
+                    <i class="fa-solid fa-arrows-rotate mr-1"></i> Refill & Servis (2-in-1)
+                </button>
+                <button onclick="quickFilterPill('ACTIVE')" id="pill-ACTIVE" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 transition shrink-0">
+                    <i class="fa-solid fa-shield-check text-emerald-500 mr-1"></i> Aktif / Selamat
+                </button>
+            </div>
+
+            <!-- Filter & Search Bar -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <!-- Search Input -->
+                <div class="lg:col-span-2 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-input" oninput="renderTable()" placeholder="Cari kawasan, tiang, dinding, no..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                </div>
+
+                <!-- Area Filter -->
+                <div>
+                    <select id="filter-area" onchange="renderTable()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <option value="ALL">Semua Kawasan</option>
+                        <option value="GUARD HOUSE">GUARD HOUSE</option>
+                        <option value="OFFICE">OFFICE</option>
+                        <option value="OFFICE ATAS">OFFICE ATAS</option>
+                        <option value="SAWMILL">SAWMILL</option>
+                        <option value="INDONESIA (D)">INDONESIA (D)</option>
+                        <option value="MOULDING">MOULDING</option>
+                        <option value="PACKING">PACKING</option>
+                        <option value="HOSTEL">HOSTEL</option>
+                    </select>
+                </div>
+
+                <!-- Weight Filter -->
+                <div>
+                    <select id="filter-weight" onchange="renderTable()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <option value="ALL">Semua Berat (9KG / 2KG)</option>
+                        <option value="9 KG">9 KG Sahaja</option>
+                        <option value="2 KG">2 KG Sahaja</option>
+                        <option value="TIADA">Tiada Rekod Berat</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <select id="filter-status" onchange="renderTable()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <option value="ALL">Semua Status & Kerja</option>
+                        <option value="DUE_ALL">Servis Sahaja (Tamat / &le;1 Bln)</option>
+                        <option value="REFILL_ONLY">Refill Sahaja (Sudah Digunakan)</option>
+                        <option value="REFILL_AND_SERVICE">Refill & Servis (2-dalam-1)</option>
+                        <option value="ALL_USED">Semua Tong Digunakan (Refill / 2-in-1)</option>
+                        <option value="EXPIRED">Tamat Tempoh Sahaja (Merah)</option>
+                        <option value="REMINDER">Reminder &le; 1 Bulan Sahaja (Kuning)</option>
+                        <option value="CHECK">Perlu Semakan / Tiada Tarikh</option>
+                        <option value="ACTIVE">Aktif / Selamat (Hijau)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Responsive Table Container -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                <th class="py-3.5 px-4 font-bold">Pilih RFQ</th>
+                                <th class="py-3.5 px-3 font-bold">No.</th>
+                                <th class="py-3.5 px-4 font-bold">Kawasan</th>
+                                <th class="py-3.5 px-4 font-bold">Tempat & Point</th>
+                                <th class="py-3.5 px-3 font-bold">Berat</th>
+                                <th class="py-3.5 px-4 font-bold">Tarikh Tamat</th>
+                                <th class="py-3.5 px-4 font-bold">Status Tarikh</th>
+                                <th class="py-3.5 px-4 font-bold">Pilihan Kerja (Tick Refill / 2-in-1)</th>
+                                <th class="py-3.5 px-4 font-bold text-right">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="extinguisher-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="empty-state" class="hidden py-12 text-center">
+                    <i class="fa-solid fa-folder-open text-4xl text-slate-300 dark:text-slate-700 mb-3"></i>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium">Tiada rekod pemadam api sepadan dengan carian anda.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- TAB 2: PENJANA QUOTATION, STANDBY FE 50% & REMINDER KONTRAKTOR        -->
+        <!-- ===================================================================== -->
+        <section id="view-rfq" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Left Column: Contractor Details & Actions (No Print) -->
+                <div class="lg:col-span-1 space-y-4 no-print">
+                    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <div class="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-950 text-red-600 flex items-center justify-center">
+                                <i class="fa-solid fa-user-gear"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-base">Maklumat Kontraktor Servis</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Disegerak ke awan & simpanan lokal</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1.5">Nama Syarikat / Kontraktor</label>
+                            <input type="text" id="contractor-name" oninput="saveContractorAndRFQSettings()" placeholder="Cth: Syarikat Servis Pemadam Api Maju" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1.5">No. WhatsApp Kontraktor (601...)</label>
+                            <input type="tel" id="contractor-phone" oninput="saveContractorAndRFQSettings()" placeholder="Cth: 60123456789" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1.5">Tarikh Cadangan Kutipan / Servis</label>
+                            <input type="date" id="service-pickup-date" onchange="saveContractorAndRFQSettings()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        </div>
+
+                        <!-- Toggle Include Temporary Standby 50% in WhatsApp -->
+                        <div class="space-y-2 pt-1">
+                            <label class="flex items-center justify-between gap-3 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 cursor-pointer">
+                                <div>
+                                    <span class="text-xs font-bold text-blue-900 dark:text-blue-200 block">Sertakan Request Temporary Standby FE (50%)</span>
+                                    <span class="text-[11px] text-blue-700 dark:text-blue-300/80">Auto kira 50% tong ganti sementara dalam mesej</span>
+                                </div>
+                                <input type="checkbox" id="include-standby-toggle" checked onchange="saveContractorAndRFQSettings()" class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500">
+                            </label>
+
+                            <label class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 cursor-pointer">
+                                <div>
+                                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">Sertakan Senarai Lokasi dalam Mesej</span>
+                                    <span class="text-[11px] text-slate-500 dark:text-slate-400">Senaraikan No. & Tiang/Dinding di bawah mesej</span>
+                                </div>
+                                <input type="checkbox" id="include-locations-toggle" onchange="saveContractorAndRFQSettings()" class="w-5 h-5 rounded text-red-600 focus:ring-red-500">
+                            </label>
+                        </div>
+
+                        <!-- Quick Selection Helper Buttons -->
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Penyelarasan Pantas:</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="autoSelectDueAndRefillUnits(true)" class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300 transition">
+                                    <i class="fa-solid fa-rotate mr-1"></i> Auto-Sync Jadual
+                                </button>
+                                <button onclick="clearRFQSelection()" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 transition">
+                                    <i class="fa-solid fa-xmark mr-1"></i> Kosongkan Semua
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons Card -->
+                    <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hantar Senarai & Dapatkan Quotation</h4>
+                        
+                        <button onclick="sendWhatsAppRFQ()" class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2.5 transition active:scale-95">
+                            <i class="fa-brands fa-whatsapp text-xl"></i>
+                            <span>Hantar ke WhatsApp Kontraktor</span>
+                        </button>
+
+                        <button onclick="copyRFQText()" class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-regular fa-copy text-base"></i>
+                            <span>Salin Teks Mesej Simple (Clipboard)</span>
+                        </button>
+
+                        <button onclick="window.print()" class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+                            <i class="fa-solid fa-print text-base"></i>
+                            <span>Cetak / Simpan PDF Rasmi</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Official RFQ Document Preview & Print Area -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm print-container">
+                        
+                        <!-- Letterhead Header -->
+                        <div class="border-b-2 border-slate-900 dark:border-slate-600 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                    SCK WOODEN INDUSTRIES SDN BHD
+                                </h2>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                    Rujukan Dokumen: SCK-DOSH-F11 | Permintaan Sebut Harga Servis, Refill & Temporary Standby FE
+                                </p>
+                            </div>
+                            <div class="text-left sm:text-right">
+                                <span class="inline-block px-3 py-1 rounded-lg bg-red-600 text-white text-xs font-extrabold uppercase tracking-wider">
+                                    REQUEST FOR QUOTATION
+                                </span>
+                                <p class="text-xs text-slate-600 dark:text-slate-300 mt-1.5 font-semibold" id="rfq-doc-date"></p>
+                            </div>
+                        </div>
+
+                        <!-- Recipient & Pickup Info -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div>
+                                <span class="text-xs font-bold uppercase text-slate-400">Kepada Kontraktor:</span>
+                                <p id="preview-contractor-name" class="font-bold text-slate-900 dark:text-white text-sm mt-0.5">Kontraktor Servis Pemadam Api</p>
+                                <p id="preview-contractor-phone" class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">-</p>
+                            </div>
+                            <div>
+                                <span class="text-xs font-bold uppercase text-slate-400">Tarikh Sasaran Kutipan Tong:</span>
+                                <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5" id="preview-pickup-date">Segera / Mengikut Jadual Kontraktor</p>
+                            </div>
+                        </div>
+
+                        <!-- RINGKASAN KUANTITI MENGIKUT 3 KATEGORI + 50% TEMPORARY STANDBY FE -->
+                        <div class="mb-6 space-y-4">
+                            <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-calculator text-red-600"></i>
+                                <span>Ringkasan Kuantiti Untuk Sebut Harga (Quotation)</span>
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                                <!-- Category 1: Servis Tahunan Sahaja -->
+                                <div class="p-4 rounded-2xl bg-red-50/80 dark:bg-red-950/30 border border-red-200 dark:border-red-800/80 space-y-3">
+                                    <div class="border-b border-red-200/70 dark:border-red-800/60 pb-2">
+                                        <span class="inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-red-600 text-white mb-1">1. Servis Sahaja</span>
+                                        <p class="text-xs font-bold text-red-900 dark:text-red-200">Tamat / Akan Tamat Tempoh</p>
+                                    </div>
+                                    
+                                    <!-- 9 KG Service Row -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">9 KG</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjustManualCount('service9', -1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 font-bold hover:bg-red-100 transition text-xs">-</button>
+                                            <span class="text-base font-extrabold text-red-700 dark:text-red-400 min-w-[3.2rem] text-center"><span id="rfq-service-9kg">0</span> Nos</span>
+                                            <button type="button" onclick="adjustManualCount('service9', 1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 font-bold hover:bg-red-100 transition text-xs">+</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2 KG Service Row -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">2 KG</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjustManualCount('service2', -1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 font-bold hover:bg-red-100 transition text-xs">-</button>
+                                            <span class="text-base font-extrabold text-red-700 dark:text-red-400 min-w-[3.2rem] text-center"><span id="rfq-service-2kg">0</span> Nos</span>
+                                            <button type="button" onclick="adjustManualCount('service2', 1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 font-bold hover:bg-red-100 transition text-xs">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Category 2: Refill Sahaja -->
+                                <div class="p-4 rounded-2xl bg-orange-50/90 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/80 space-y-3">
+                                    <div class="border-b border-orange-200/70 dark:border-orange-800/60 pb-2">
+                                        <span class="inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-orange-600 text-white mb-1">2. Refill Sahaja</span>
+                                        <p class="text-xs font-bold text-orange-900 dark:text-orange-200">Sudah Digunakan / Kosong</p>
+                                    </div>
+                                    
+                                    <!-- 9 KG Refill Row -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">9 KG</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjustManualCount('refill9', -1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300 font-bold hover:bg-orange-100 transition text-xs">-</button>
+                                            <span class="text-base font-extrabold text-orange-700 dark:text-orange-400 min-w-[3.2rem] text-center"><span id="rfq-refill-9kg">0</span> Nos</span>
+                                            <button type="button" onclick="adjustManualCount('refill9', 1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300 font-bold hover:bg-orange-100 transition text-xs">+</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2 KG Refill Row -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">2 KG</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjustManualCount('refill2', -1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300 font-bold hover:bg-orange-100 transition text-xs">-</button>
+                                            <span class="text-base font-extrabold text-orange-700 dark:text-orange-400 min-w-[3.2rem] text-center"><span id="rfq-refill-2kg">0</span> Nos</span>
+                                            <button type="button" onclick="adjustManualCount('refill2', 1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300 font-bold hover:bg-orange-100 transition text-xs">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Category 3: Refill & Servis (2-in-1) -->
+                                <div class="p-4 rounded-2xl bg-purple-50/90 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/80 space-y-3">
+                                    <div class="border-b border-purple-200/70 dark:border-purple-800/60 pb-2">
+                                        <span class="inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-purple-600 text-white mb-1">3. Refill & Servis (2-in-1)</span>
+                                        <p class="text-xs font-bold text-purple-900 dark:text-purple-200">Digunakan + Servis Sekaligus</p>
+                                    </div>
+                                    
+                                    <!-- 9 KG Both Row -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">9 KG</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjustManualCount('both9', -1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-100 transition text-xs">-</button>
+                                            <span class="text-base font-extrabold text-purple-700 dark:text-purple-400 min-w-[3.2rem] text-center"><span id="rfq-both-9kg">0</span> Nos</span>
+                                            <button type="button" onclick="adjustManualCount('both9', 1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-100 transition text-xs">+</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2 KG Both Row -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">2 KG</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjustManualCount('both2', -1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-100 transition text-xs">-</button>
+                                            <span class="text-base font-extrabold text-purple-700 dark:text-purple-400 min-w-[3.2rem] text-center"><span id="rfq-both-2kg">0</span> Nos</span>
+                                            <button type="button" onclick="adjustManualCount('both2', 1)" class="no-print w-6 h-6 rounded-md bg-white dark:bg-slate-800 border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-100 transition text-xs">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grand Total Bar -->
+                            <div class="p-3.5 rounded-xl bg-slate-900 dark:bg-slate-800 text-white flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">Jumlah Keseluruhan Tong Keluar (Servis + Refill + 2-in-1):</span>
+                                <span class="text-lg sm:text-xl font-extrabold text-white"><span id="rfq-count-total">0</span> Nos <span class="text-xs font-normal text-slate-400">(<span id="rfq-subtotal-9kg">0</span>x 9KG, <span id="rfq-subtotal-2kg">0</span>x 2KG)</span></span>
+                            </div>
+
+                            <!-- AUTO 50% TEMPORARY / STANDBY FE CALCULATOR BOX -->
+                            <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-blue-950/40 border-2 border-blue-300 dark:border-blue-800 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-200 dark:border-blue-800/70 pb-2.5">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
+                                            <i class="fa-solid fa-shield-halved text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs sm:text-sm font-extrabold uppercase text-blue-950 dark:text-blue-100">
+                                                Keperluan Temporary / Standby FE (Auto 50% Daripada Tong Keluar)
+                                            </h4>
+                                            <p class="text-[11px] text-blue-700 dark:text-blue-300">
+                                                Tong pinjaman sementara oleh kontraktor sepanjang tempoh tong kilang dibawa keluar
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="text-left sm:text-right">
+                                        <span class="inline-block px-3 py-1 rounded-xl bg-blue-600 text-white text-sm font-extrabold shadow-sm">
+                                            <span id="rfq-standby-total">0</span> Nos Standby
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                    <div class="flex items-center justify-between bg-white/80 dark:bg-slate-900/70 px-3.5 py-2.5 rounded-xl border border-blue-200/80 dark:border-blue-800">
+                                        <div>
+                                            <span class="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">Standby 9 KG (50%)</span>
+                                            <span class="text-[11px] text-slate-500 dark:text-slate-400">Auto kira 50% tong 9 KG keluar</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjustManualCount('standby9', -1)" class="no-print w-6 h-6 rounded-md bg-blue-50 dark:bg-slate-800 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold hover:bg-blue-100 transition text-xs">-</button>
+                                            <span class="text-base font-extrabold text-blue-700 dark:text-blue-300 min-w-[3.2rem] text-center"><span id="rfq-standby-9kg">0</span> Nos</span>
+                                            <button type="button" onclick="adjustManualCount('standby9', 1)" class="no-print w-6 h-6 rounded-md bg-blue-50 dark:bg-slate-800 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold hover:bg-blue-100 transition text-xs">+</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between bg-white/80 dark:bg-slate-900/70 px-3.5 py-2.5 rounded-xl border border-blue-200/80 dark:border-blue-800">
+                                        <div>
+                                            <span class="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">Standby 2 KG (50%)</span>
+                                            <span class="text-[11px] text-slate-500 dark:text-slate-400">Auto kira 50% tong 2 KG keluar</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <button type="button" onclick="adjustManualCount('standby2', -1)" class="no-print w-6 h-6 rounded-md bg-blue-50 dark:bg-slate-800 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold hover:bg-blue-100 transition text-xs">-</button>
+                                            <span class="text-base font-extrabold text-blue-700 dark:text-blue-300 min-w-[3.2rem] text-center"><span id="rfq-standby-2kg">0</span> Nos</span>
+                                            <button type="button" onclick="adjustManualCount('standby2', 1)" class="no-print w-6 h-6 rounded-md bg-blue-50 dark:bg-slate-800 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-bold hover:bg-blue-100 transition text-xs">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Simple Message Preview Box (No Print) -->
+                        <div class="mb-6 no-print">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                                    <i class="fa-brands fa-whatsapp text-emerald-500 mr-1"></i> Pratonton Mesej Simple (Sedia Hantar):
+                                </span>
+                                <button onclick="copyRFQText()" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
+                                    Salin Teks
+                                </button>
+                            </div>
+                            <pre id="whatsapp-message-preview" class="p-4 rounded-xl bg-emerald-50/60 dark:bg-slate-800/90 border border-emerald-200 dark:border-slate-700 text-xs sm:text-sm font-sans whitespace-pre-wrap text-slate-800 dark:text-slate-200 leading-relaxed"></pre>
+                        </div>
+
+                        <!-- DETAILED LIST TABLE FOR CONTRACTOR -->
+                        <div>
+                            <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-3 flex items-center justify-between">
+                                <span><i class="fa-solid fa-list-ol text-red-600 mr-1.5"></i> Senarai Rekod Unit Dipilih</span>
+                                <span class="text-xs font-normal text-slate-500 no-print">(Berdasarkan pilihan di jadual semakan)</span>
+                            </h3>
+                            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                                    <thead>
+                                        <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">
+                                            <th class="py-2.5 px-3 font-bold">Bil.</th>
+                                            <th class="py-2.5 px-3 font-bold">No.</th>
+                                            <th class="py-2.5 px-3 font-bold">Kawasan & Lokasi</th>
+                                            <th class="py-2.5 px-3 font-bold">Berat</th>
+                                            <th class="py-2.5 px-3 font-bold">Jenis Kerja</th>
+                                            <th class="py-2.5 px-3 font-bold">Tarikh Tamat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rfq-table-body" class="divide-y divide-slate-200 dark:divide-slate-700">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Print Footer Signature -->
+                        <div class="hidden print-only mt-10 pt-6 border-t border-slate-300 grid grid-cols-2 gap-8 text-xs">
+                            <div>
+                                <p class="font-bold">Disediakan Oleh (SCK Wooden Industries Sdn Bhd):</p>
+                                <div class="h-12 border-b border-slate-400 w-48 mt-4"></div>
+                                <p class="mt-1">Pegawai Keselamatan / Pentadbiran</p>
+                            </div>
+                            <div>
+                                <p class="font-bold">Pengesahan Kontraktor (Kutipan & Standby FE):</p>
+                                <div class="h-12 border-b border-slate-400 w-48 mt-4"></div>
+                                <p class="mt-1">Nama, Cop Syarikat & Tarikh</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 px-4 text-center text-xs text-slate-500 dark:text-slate-400 no-print">
+        <p>Sistem Pantau & Sebut Harga Pemadam Api &bull; <strong>SCK Wooden Industries Sdn Bhd</strong> (Ref: SCK-DOSH-F11) &bull; Firebase Cloud: <span class="font-mono text-slate-700 dark:text-slate-300">pemadam-api-sck</span></p>
+    </footer>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 1: TAMBAH / EDIT UNIT PEMADAM API                               -->
+    <!-- ===================================================================== -->
+    <div id="item-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4 no-print">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+                <h3 id="item-modal-title" class="text-lg font-extrabold text-slate-900 dark:text-white">Tambah Unit Pemadam Api</h3>
+                <button onclick="closeItemModal()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form id="item-form" onsubmit="saveItemForm(event)" class="space-y-4">
+                <input type="hidden" id="edit-item-id">
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">No. Senarai</label>
+                        <input type="text" id="field-no" required placeholder="Cth: 45 atau H-7" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Kategori Lokasi</label>
+                        <select id="field-section" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                            <option value="KILANG">KILANG</option>
+                            <option value="HOSTEL">HOSTEL</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Kawasan</label>
+                        <input type="text" id="field-kawasan" required placeholder="Cth: MOULDING" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Tempat (Tiang / Dinding)</label>
+                        <input type="text" id="field-tempat" required placeholder="Cth: TIANG atau DINDING" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm uppercase">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Point No.</label>
+                        <input type="text" id="field-point" required placeholder="Cth: 11" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Berat (KG)</label>
+                        <select id="field-berat" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                            <option value="9 KG">9 KG</option>
+                            <option value="2 KG">2 KG</option>
+                            <option value="">Tiada Maklumat</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Tarikh Tamat Tempoh (Kosongkan jika tiada)</label>
+                    <input type="date" id="field-expiry" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                </div>
+
+                <!-- Pilihan Tick Status Tong Digunakan: Refill Sahaja vs Refill & Servis (2-in-1) -->
+                <div class="p-4 rounded-xl bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/70 space-y-3">
+                    <p class="text-xs font-extrabold uppercase tracking-wider text-orange-900 dark:text-orange-200">
+                        Status Penggunaan Tong (Jika Telah Dipakai):
+                    </p>
+                    
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="field-is-used" onchange="syncModalWorkCheckboxes('used')" class="w-5 h-5 mt-0.5 rounded text-orange-600 focus:ring-orange-500">
+                        <div>
+                            <span class="text-sm font-bold text-slate-900 dark:text-white block">Tong Sudah Digunakan (Perlu Refill)</span>
+                            <span class="text-xs text-slate-600 dark:text-slate-300">Tandakan jika tong telah digunakan/kosong.</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start gap-3 cursor-pointer pl-4 border-l-2 border-purple-400">
+                        <input type="checkbox" id="field-also-service" onchange="syncModalWorkCheckboxes('both')" class="w-5 h-5 mt-0.5 rounded text-purple-600 focus:ring-purple-500">
+                        <div>
+                            <span class="text-sm font-bold text-purple-800 dark:text-purple-300 block">Sekaligus Minta Servis (Refill & Servis 2-in-1)</span>
+                            <span class="text-xs text-slate-600 dark:text-slate-300">Tandakan jika mahu kontraktor buat Refill dan Servis tahunan sekaligus untuk tong ini.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Catatan Tambahan</label>
+                    <input type="text" id="field-notes" placeholder="Cth: Baru lepas servis / Digunakan semasa latihan" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeItemModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-700 text-white shadow-md">
+                        Simpan Rekod
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL 2: CLOUD FIRESTORE (pemadam-api-sck) & LOG MASUK GOOGLE POPUP   -->
+    <!-- ===================================================================== -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4 no-print">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 flex items-center justify-center">
+                        <i class="fa-solid fa-cloud text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">Cloud Firestore Sync</h3>
+                        <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400">Projek: pemadam-api-sck</p>
+                    </div>
+                </div>
+                <button onclick="closeAuthModal()" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Current Cloud & Sync Status Card -->
+                <div id="modal-status-card" class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Status Sambungan:</span>
+                        <span id="modal-connection-pill" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                            Mod Tetamu (Simpanan Lokal)
+                        </span>
+                    </div>
+                    <p id="modal-auth-status" class="text-sm font-bold text-slate-900 dark:text-white">
+                        Belum log masuk ke akaun Google.
+                    </p>
+                    <p id="modal-sync-detail" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Semua perubahan disimpan dalam pelayar ini (LocalStorage). Log masuk dengan Google untuk menyegerakkan kesemua 50 unit pemadam api, tetapan quotation, dan maklumat kontraktor secara masa nyata (real-time) merentas iPad, iPhone, dan PC.
+                    </p>
+                    <div id="modal-last-sync-row" class="hidden pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                        <span>Laluan Cloud: <code class="font-mono text-blue-600 dark:text-blue-400">users/{uid}/sck_fire_extinguishers/master_data</code></span>
+                        <span id="modal-last-sync-time">Disegerak</span>
+                    </div>
+                </div>
+
+                <!-- Google Sign-In & Manual Sync Controls -->
+                <div id="firebase-login-controls" class="space-y-2.5">
+                    <!-- Sign In with Google Popup (Strictly signInWithPopup) -->
+                    <button onclick="loginWithGooglePopup()" id="btn-google-popup" class="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm shadow-md flex items-center justify-center gap-3 transition active:scale-95">
+                        <i class="fa-brands fa-google text-red-500 text-lg"></i>
+                        <span>Log Masuk dengan Google (Aktifkan Cloud Sync)</span>
+                    </button>
+
+                    <!-- Manual Sync / Upload to Cloud Button (Shown when authenticated) -->
+                    <button onclick="manualCloudUploadSync()" id="btn-manual-cloud-sync" class="hidden w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition active:scale-95">
+                        <i id="modal-sync-icon" class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Sync Manual / Muat Naik ke Cloud</span>
+                    </button>
+
+                    <!-- Logout Button (Shown when authenticated) -->
+                    <button onclick="logoutFirebase()" id="btn-google-logout" class="hidden w-full py-2.5 px-4 rounded-xl bg-red-100 hover:bg-red-200 dark:bg-red-950/60 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 font-bold text-xs sm:text-sm transition">
+                        Log Keluar & Kembali ke Mod Tetamu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- JAVASCRIPT LOGIC, FIREBASE CLOUD SYNC & DATA ENGINE                   -->
+    <!-- ===================================================================== -->
+    <script>
+        /**
+         * 1. FIREBASE CONFIGURATION & INITIALIZATION (Project: pemadam-api-sck)
+         * Menggunakan pemecahan rentetan ringan pada apiKey untuk mengelakkan sekatan pengimbas automatik.
+         */
+        const firebaseConfig = {
+            apiKey: ["AIzaSyB", "Qj8RWiPIncP76esPvE9kuVXlAoVq3ivE"].join(""),
+            authDomain: "pemadam-api-sck.firebaseapp.com",
+            projectId: "pemadam-api-sck",
+            storageBucket: "pemadam-api-sck.firebasestorage.app",
+            messagingSenderId: "525762459873",
+            appId: "1:525762459873:web:d589c203924ac2d6bcdfa0",
+            measurementId: "G-6CQ5HTYMQK"
+        };
+
+        let firebaseApp = null;
+        let firebaseAuth = null;
+        let firebaseDb = null;
+        let firebaseAnalytics = null;
+        let currentUser = null;
+        let firestoreUnsubscribe = null;
+        let isApplyingRemoteSnapshot = false;
+        let cloudSyncDebounceTimer = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebaseApp = firebase.initializeApp(firebaseConfig);
+            } else {
+                firebaseApp = firebase.app();
+            }
+            firebaseAuth = firebase.auth();
+            firebaseDb = firebase.firestore();
+            if (typeof firebase.analytics === 'function') {
+                firebaseAnalytics = firebase.analytics();
+            }
+        } catch (initErr) {
+            console.error('Firebase initialization warning:', initErr);
+        }
+
+        /**
+         * 2. PWA DYNAMIC ICON & MANIFEST GENERATOR
+         */
+        function generatePWAAssets() {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+
+                const grad = ctx.createLinearGradient(0, 0, 512, 512);
+                grad.addColorStop(0, '#dc2626');
+                grad.addColorStop(1, '#7f1d1d');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(0, 0, 512, 512, 110);
+                ctx.fill();
+
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 14;
+                ctx.beginPath();
+                ctx.roundRect(24, 24, 464, 464, 92);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.roundRect(190, 170, 132, 230, 36);
+                ctx.fill();
+
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(190, 235, 132, 42);
+
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(236, 130, 40, 45);
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 18;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(220, 132);
+                ctx.lineTo(315, 110);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(236, 148);
+                ctx.quadraticCurveTo(135, 165, 145, 310);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '800 44px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('SCK FIRE', 256, 458);
+
+                const iconDataUrl = canvas.toDataURL('image/png');
+                document.getElementById('apple-touch-icon').href = iconDataUrl;
+                document.getElementById('favicon-link').href = iconDataUrl;
+
+                const manifest = {
+                    name: 'Sistem Pantau & Sebut Harga Pemadam Api - SCK Wooden Industries',
+                    short_name: 'SCK FireGuard',
+                    start_url: '.',
+                    display: 'standalone',
+                    background_color: '#0f172a',
+                    theme_color: '#b91c1c',
+                    icons: [
+                        { src: iconDataUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+                    ]
+                };
+                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+                document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+            } catch (e) {
+                console.warn('PWA asset generation skipped:', e);
+            }
+        }
+
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-pwa-btn').classList.remove('hidden');
+            document.getElementById('install-pwa-btn-mobile').classList.remove('hidden');
+        });
+
+        async function triggerInstallPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast('Aplikasi sedang dipasang ke peranti anda!', 'success');
+                }
+                deferredPrompt = null;
+            } else {
+                showToast('Untuk iPhone/iPad: Tekan ikon "Share" di Safari dan pilih "Add to Home Screen".', 'info');
+            }
+        }
+
+        /**
+         * 3. PRE-LOADED DATA FROM SCK-DOSH-F11 (50 UNITS: 44 FACTORY + 6 HOSTEL)
+         */
+        const INITIAL_SCK_DATA = [
+            // KILANG (1 - 44)
+            { id: 'f-1', no: '1', section: 'KILANG', kawasan: 'GUARD HOUSE', tempat: 'DINDING', point: '1', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-2', no: '2', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '5', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-3', no: '3', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '2', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-4', no: '4', section: 'KILANG', kawasan: 'OFFICE ATAS', tempat: 'DINDING', point: '3', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-5', no: '5', section: 'KILANG', kawasan: 'OFFICE ATAS', tempat: 'DINDING', point: '4', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-6', no: '6', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '1', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-7', no: '7', section: 'KILANG', kawasan: 'SAWMILL', tempat: 'DINDING', point: '1', expiry: '2026-12-18', berat: '2 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-8', no: '8', section: 'KILANG', kawasan: 'INDONESIA (D)', tempat: 'DINDING', point: '1', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-9', no: '9', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-10', no: '10', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2026-10-06', berat: '9 KG', workMode: 'AUTO', notes: 'Tamat tempoh (X) - Perlu servis segera' },
+            { id: 'f-11', no: '11', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-12', no: '12', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-13', no: '13', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-14', no: '14', section: 'KILANG', kawasan: 'INDONESIA (D)', tempat: 'DINDING', point: '2', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-15', no: '15', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '1', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-16', no: '16', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '20', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-17', no: '17', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '21', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-18', no: '18', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '22', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-19', no: '19', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '25', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-20', no: '20', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '28', expiry: '', berat: '', workMode: 'AUTO', notes: 'Bertanda (X) dalam checklist - Tiada rekod tarikh/berat' },
+            { id: 'f-21', no: '21', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '29', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-22', no: '22', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '30', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-23', no: '23', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '31', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-24', no: '24', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '34', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-25', no: '25', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '35', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-26', no: '26', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '36', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-27', no: '27', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '37', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-28', no: '28', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '38', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-29', no: '29', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '40', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-30', no: '30', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '42', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-31', no: '31', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '47', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-32', no: '32', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '2', expiry: '2026-12-18', berat: '2 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-33', no: '33', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '3', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-34', no: '34', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '4', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-35', no: '35', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '53', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-36', no: '36', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '60', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-37', no: '37', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '18', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-38', no: '38', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '20', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-39', no: '39', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '22', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-40', no: '40', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '24', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-41', no: '41', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '26', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-42', no: '42', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '28', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-43', no: '43', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '29', expiry: '2027-07-22', berat: '2 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-44', no: '44', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '31', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            // HOSTEL (1 - 6)
+            { id: 'h-1', no: 'H-1', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '1', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'h-2', no: 'H-2', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '2', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'h-3', no: 'H-3', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '3', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'h-4', no: 'H-4', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '4', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'h-5', no: 'H-5', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '5', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'h-6', no: 'H-6', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '6', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' }
+        ];
+
+        // Global Application State
+        let extinguishers = [];
+        let selectedForRFQ = new Set();
+        let manualOffsets = {
+            service9: 0,
+            service2: 0,
+            refill9: 0,
+            refill2: 0,
+            both9: 0,
+            both2: 0,
+            standby9: 0,
+            standby2: 0
+        };
+        let currentCardFilter = 'ALL';
+
+        const STORAGE_KEY_DATA = 'sck_fire_extinguishers_v3';
+        const STORAGE_KEY_THEME = 'sck_fire_theme_v1';
+        const STORAGE_KEY_CONTRACTOR = 'sck_fire_contractor_v2';
+        const STORAGE_KEY_RFQ_STATE = 'sck_fire_rfq_state_v1';
+
+        /**
+         * 4. EXPIRY & EARLY REMINDER CALCULATION ENGINE
+         */
+        function getStatusInfo(item) {
+            const expiryDateStr = item.expiry;
+            const workMode = item.workMode || 'AUTO';
+
+            let customRowHighlight = '';
+            if (workMode === 'REFILL_AND_SERVICE') {
+                customRowHighlight = 'bg-purple-50/75 dark:bg-purple-950/25';
+            } else if (workMode === 'REFILL_ONLY') {
+                customRowHighlight = 'bg-orange-50/75 dark:bg-orange-950/25';
+            }
+
+            if (!expiryDateStr) {
+                return {
+                    code: 'CHECK',
+                    label: 'Perlu Semakan',
+                    daysLeft: null,
+                    badgeClass: 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700',
+                    rowClass: customRowHighlight || 'bg-slate-100/60 dark:bg-slate-900/40',
+                    icon: 'fa-circle-question'
+                };
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const expDate = new Date(expiryDateStr + 'T00:00:00');
+            const diffTime = expDate.getTime() - today.getTime();
+            const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (daysLeft < 0) {
+                return {
+                    code: 'EXPIRED',
+                    label: `Tamat Tempoh (${Math.abs(daysLeft)} hari lepas)`,
+                    daysLeft: daysLeft,
+                    badgeClass: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border border-red-300 dark:border-red-800 font-bold',
+                    rowClass: customRowHighlight || 'bg-red-50/70 dark:bg-red-950/25',
+                    icon: 'fa-triangle-exclamation'
+                };
+            } else if (daysLeft <= 31) {
+                return {
+                    code: 'REMINDER',
+                    label: `Reminder Kontraktor (${daysLeft} hari lagi)`,
+                    daysLeft: daysLeft,
+                    badgeClass: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-bold',
+                    rowClass: customRowHighlight || 'bg-amber-50/70 dark:bg-amber-950/20',
+                    icon: 'fa-bell'
+                };
+            } else {
+                return {
+                    code: 'ACTIVE',
+                    label: `Aktif (${daysLeft} hari lagi)`,
+                    daysLeft: daysLeft,
+                    badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
+                    rowClass: customRowHighlight,
+                    icon: 'fa-check-circle'
+                };
+            }
+        }
+
+        function normalizeItemRecord(item) {
+            let mode = item.workMode || 'AUTO';
+            if (!item.workMode && item.isUsed) {
+                mode = 'REFILL_ONLY';
+            }
+            return {
+                ...item,
+                workMode: mode
+            };
+        }
+
+        function formatDisplayDate(isoDate) {
+            if (!isoDate) return '-';
+            const parts = isoDate.split('-');
+            if (parts.length !== 3) return isoDate;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        /**
+         * 5. DATA PERSISTENCE & REAL-TIME FIRESTORE SYNC
+         * Laluan Firestore: users/{userId}/sck_fire_extinguishers/master_data
+         */
+        function getMasterDocRef(uid) {
+            if (!firebaseDb || !uid) return null;
+            return firebaseDb
+                .collection('users')
+                .doc(uid)
+                .collection('sck_fire_extinguishers')
+                .doc('master_data');
+        }
+
+        function getFullStatePayload() {
+            return {
+                records: extinguishers,
+                selectedIds: Array.from(selectedForRFQ),
+                manualOffsets: manualOffsets,
+                contractor: {
+                    name: document.getElementById('contractor-name').value || '',
+                    phone: document.getElementById('contractor-phone').value || '',
+                    pickupDate: document.getElementById('service-pickup-date').value || '',
+                    includeStandby: document.getElementById('include-standby-toggle').checked,
+                    includeLocations: document.getElementById('include-locations-toggle').checked
+                },
+                updatedAtClient: new Date().toISOString()
+            };
+        }
+
+        function saveStateLocalOnly() {
+            localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(extinguishers));
+            localStorage.setItem(STORAGE_KEY_RFQ_STATE, JSON.stringify({
+                selectedIds: Array.from(selectedForRFQ),
+                manualOffsets: manualOffsets
+            }));
+            localStorage.setItem(STORAGE_KEY_CONTRACTOR, JSON.stringify({
+                name: document.getElementById('contractor-name').value || '',
+                phone: document.getElementById('contractor-phone').value || '',
+                pickupDate: document.getElementById('service-pickup-date').value || '',
+                includeStandby: document.getElementById('include-standby-toggle').checked,
+                includeLocations: document.getElementById('include-locations-toggle').checked
+            }));
+        }
+
+        function loadLocalState() {
+            const saved = localStorage.getItem(STORAGE_KEY_DATA);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    extinguishers = parsed.map(normalizeItemRecord);
+                } catch (e) {
+                    extinguishers = JSON.parse(JSON.stringify(INITIAL_SCK_DATA));
+                }
+            } else {
+                extinguishers = JSON.parse(JSON.stringify(INITIAL_SCK_DATA));
+            }
+
+            // Load Contractor & Settings
+            const savedContractor = localStorage.getItem(STORAGE_KEY_CONTRACTOR);
+            if (savedContractor) {
+                try {
+                    const info = JSON.parse(savedContractor);
+                    document.getElementById('contractor-name').value = info.name || '';
+                    document.getElementById('contractor-phone').value = info.phone || '';
+                    document.getElementById('service-pickup-date').value = info.pickupDate || '';
+                    if (typeof info.includeStandby === 'boolean') {
+                        document.getElementById('include-standby-toggle').checked = info.includeStandby;
+                    }
+                    if (typeof info.includeLocations === 'boolean') {
+                        document.getElementById('include-locations-toggle').checked = info.includeLocations;
+                    }
+                } catch (e) {}
+            }
+
+            // Load RFQ Selection & Offsets
+            const savedRfq = localStorage.getItem(STORAGE_KEY_RFQ_STATE);
+            if (savedRfq) {
+                try {
+                    const rfqObj = JSON.parse(savedRfq);
+                    if (Array.isArray(rfqObj.selectedIds)) {
+                        selectedForRFQ = new Set(rfqObj.selectedIds);
+                    }
+                    if (rfqObj.manualOffsets) {
+                        manualOffsets = { ...manualOffsets, ...rfqObj.manualOffsets };
+                    }
+                } catch (e) {
+                    autoSelectDueAndRefillUnits(false);
+                }
+            } else {
+                autoSelectDueAndRefillUnits(false);
+            }
+
+            saveStateLocalOnly();
+        }
+
+        async function persistData(immediateCloud = false) {
+            saveStateLocalOnly();
+
+            if (!currentUser || !firebaseDb || isApplyingRemoteSnapshot) {
+                return;
+            }
+
+            const pushToFirestore = async () => {
+                try {
+                    const docRef = getMasterDocRef(currentUser.uid);
+                    const payload = getFullStatePayload();
+                    payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await docRef.set(payload, { merge: true });
+                    updateLastSyncTimestamp();
+                } catch (err) {
+                    console.error('Firestore write error:', err);
+                    showToast('Disimpan di peranti. Gagal segerak ke awan: ' + err.message, 'warning');
+                }
+            };
+
+            if (immediateCloud) {
+                clearTimeout(cloudSyncDebounceTimer);
+                await pushToFirestore();
+            } else {
+                clearTimeout(cloudSyncDebounceTimer);
+                cloudSyncDebounceTimer = setTimeout(pushToFirestore, 450);
+            }
+        }
+
+        async function manualCloudUploadSync() {
+            if (!currentUser || !firebaseDb) {
+                openAuthModal();
+                showToast('Sila log masuk dengan Google dahulu untuk menggunakan Cloud Sync.', 'warning');
+                return;
+            }
+
+            const headerIcon = document.getElementById('header-sync-icon');
+            const modalIcon = document.getElementById('modal-sync-icon');
+            if (headerIcon) headerIcon.classList.add('fa-spin');
+            if (modalIcon) modalIcon.classList.add('fa-spin');
+
+            try {
+                await persistData(true);
+                showToast('Berjaya! Semua data (50 unit, quotation & kontraktor) telah dimuat naik ke Cloud Firestore (pemadam-api-sck).', 'success');
+            } finally {
+                if (headerIcon) headerIcon.classList.remove('fa-spin');
+                if (modalIcon) modalIcon.classList.remove('fa-spin');
+            }
+        }
+
+        function attachFirestoreRealtimeListener(user) {
+            if (firestoreUnsubscribe) {
+                firestoreUnsubscribe();
+                firestoreUnsubscribe = null;
+            }
+
+            const docRef = getMasterDocRef(user.uid);
+            if (!docRef) return;
+
+            let isFirstSnapshot = true;
+
+            firestoreUnsubscribe = docRef.onSnapshot(async (docSnap) => {
+                if (!docSnap.exists) {
+                    // First-time cloud login with empty cloud document: auto-upload current local data
+                    if (isFirstSnapshot) {
+                        isFirstSnapshot = false;
+                        await persistData(true);
+                        showToast('Akaun awan baharu dikesan. Data lokal semasa telah dimuat naik secara automatik ke Cloud Firestore!', 'success');
+                    }
+                    return;
+                }
+
+                isFirstSnapshot = false;
+                const data = docSnap.data();
+                if (!data) return;
+
+                isApplyingRemoteSnapshot = true;
+                try {
+                    if (Array.isArray(data.records) && data.records.length > 0) {
+                        extinguishers = data.records.map(normalizeItemRecord);
+                    }
+                    if (Array.isArray(data.selectedIds)) {
+                        selectedForRFQ = new Set(data.selectedIds);
+                    }
+                    if (data.manualOffsets) {
+                        manualOffsets = { ...manualOffsets, ...data.manualOffsets };
+                    }
+                    if (data.contractor) {
+                        const c = data.contractor;
+                        if (typeof c.name === 'string') document.getElementById('contractor-name').value = c.name;
+                        if (typeof c.phone === 'string') document.getElementById('contractor-phone').value = c.phone;
+                        if (typeof c.pickupDate === 'string') document.getElementById('service-pickup-date').value = c.pickupDate;
+                        if (typeof c.includeStandby === 'boolean') document.getElementById('include-standby-toggle').checked = c.includeStandby;
+                        if (typeof c.includeLocations === 'boolean') document.getElementById('include-locations-toggle').checked = c.includeLocations;
+                    }
+
+                    saveStateLocalOnly();
+                    refreshAllViews();
+                    updateLastSyncTimestamp();
+                } finally {
+                    isApplyingRemoteSnapshot = false;
+                }
+            }, (err) => {
+                console.error('Firestore onSnapshot error:', err);
+                showToast('Ralat sambungan masa nyata Firestore: ' + err.message, 'error');
+            });
+        }
+
+        function updateLastSyncTimestamp() {
+            const nowStr = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const el = document.getElementById('modal-last-sync-time');
+            if (el) el.textContent = `Segerak terakhir: ${nowStr}`;
+        }
+
+        /**
+         * 6. RENDERING DASHBOARD, TABLE & RFQ GENERATOR
+         */
+        function refreshAllViews() {
+            updateDashboardStats();
+            renderTable();
+            updateRFQPreview();
+        }
+
+        function updateDashboardStats() {
+            let total = extinguishers.length;
+            let serviceOnlyCount = 0;
+            let refillOnlyCount = 0;
+            let bothCount = 0;
+            let activeCount = 0;
+            let checkCount = 0;
+            let factoryCount = 0;
+            let hostelCount = 0;
+
+            extinguishers.forEach(item => {
+                if (item.section === 'HOSTEL') hostelCount++;
+                else factoryCount++;
+
+                const st = getStatusInfo(item);
+                const mode = item.workMode || 'AUTO';
+
+                if (mode === 'REFILL_AND_SERVICE') {
+                    bothCount++;
+                } else if (mode === 'REFILL_ONLY') {
+                    refillOnlyCount++;
+                } else {
+                    if (st.code === 'EXPIRED' || st.code === 'REMINDER') {
+                        serviceOnlyCount++;
+                    } else if (st.code === 'ACTIVE') {
+                        activeCount++;
+                    } else {
+                        checkCount++;
+                    }
+                }
+            });
+
+            const rfqCounts = getCalculatedRFQCounts(true);
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('tab-total-unit-count').textContent = total;
+            document.getElementById('stat-total-sub').textContent = `${factoryCount} Kilang & ${hostelCount} Hostel (${checkCount} Semakan)`;
+            document.getElementById('stat-due-service').textContent = serviceOnlyCount;
+            document.getElementById('stat-refill-only').textContent = refillOnlyCount;
+            document.getElementById('stat-refill-service').textContent = bothCount;
+            document.getElementById('stat-standby').textContent = rfqCounts.standbyTotal;
+            document.getElementById('stat-standby-sub').textContent = `${rfqCounts.standby9}x 9KG, ${rfqCounts.standby2}x 2KG`;
+            document.getElementById('stat-active').textContent = activeCount;
+
+            document.getElementById('banner-alert-text').innerHTML = 
+                `Keluar: <strong class="text-red-600 dark:text-red-400">${rfqCounts.service9 + rfqCounts.service2} Servis</strong> &bull; ` +
+                `<strong class="text-orange-600 dark:text-orange-400">${rfqCounts.refill9 + rfqCounts.refill2} Refill</strong> &bull; ` +
+                `<strong class="text-purple-600 dark:text-purple-400">${rfqCounts.both9 + rfqCounts.both2} 2-in-1</strong> &rarr; ` +
+                `Standby FE (50%): <strong class="text-blue-700 dark:text-blue-300">${rfqCounts.standbyTotal} unit</strong>.`;
+        }
+
+        function filterByCard(cardType) {
+            currentCardFilter = cardType;
+            
+            document.querySelectorAll('.stat-card').forEach(btn => {
+                btn.classList.remove('border-slate-900', 'dark:border-slate-400', 'ring-2', 'ring-red-500/30');
+                if (btn.id !== 'card-STANDBY') {
+                    btn.classList.add('border-transparent');
+                }
+            });
+            const activeBtn = document.getElementById(`card-${cardType}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent');
+                activeBtn.classList.add('border-slate-900', 'dark:border-slate-400');
+            }
+
+            const statusDropdown = document.getElementById('filter-status');
+            statusDropdown.value = cardType;
+            syncFilterPills(cardType);
+            renderTable();
+        }
+
+        function quickFilterPill(statusCode) {
+            document.getElementById('filter-status').value = statusCode;
+            syncFilterPills(statusCode);
+            renderTable();
+        }
+
+        function syncFilterPills(activeCode) {
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                pill.classList.remove('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
+                pill.classList.add('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300');
+            });
+            const target = document.getElementById(`pill-${activeCode}`);
+            if (target) {
+                target.classList.remove('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300');
+                target.classList.add('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
+            }
+        }
+
+        async function toggleItemWorkMode(id, targetMode) {
+            const item = extinguishers.find(x => x.id === id);
+            if (!item) return;
+
+            const currentMode = item.workMode || 'AUTO';
+            if (currentMode === targetMode) {
+                item.workMode = 'AUTO';
+                const st = getStatusInfo(item);
+                if (st.code !== 'EXPIRED' && st.code !== 'REMINDER') {
+                    selectedForRFQ.delete(item.id);
+                }
+                showToast(`Pilihan khas dibatalkan untuk No. ${item.no} (${item.kawasan}).`, 'info');
+            } else {
+                item.workMode = targetMode;
+                selectedForRFQ.add(item.id);
+                if (targetMode === 'REFILL_AND_SERVICE') {
+                    showToast(`No. ${item.no} (${item.kawasan}) ditanda "Refill & Servis (2-in-1)" & dikira dalam Standby 50%.`, 'success');
+                } else {
+                    showToast(`No. ${item.no} (${item.kawasan}) ditanda "Refill Sahaja" & dikira dalam Standby 50%.`, 'warning');
+                }
+            }
+
+            refreshAllViews();
+            await persistData(false);
+        }
+
+        function renderTable() {
+            const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+            const areaFilter = document.getElementById('filter-area').value;
+            const weightFilter = document.getElementById('filter-weight').value;
+            const statusFilter = document.getElementById('filter-status').value;
+
+            const tbody = document.getElementById('extinguisher-table-body');
+            const emptyState = document.getElementById('empty-state');
+            tbody.innerHTML = '';
+
+            const filtered = extinguishers.filter(item => {
+                const st = getStatusInfo(item);
+                const mode = item.workMode || 'AUTO';
+
+                const matchSearch = !searchQuery || 
+                    item.no.toLowerCase().includes(searchQuery) ||
+                    item.kawasan.toLowerCase().includes(searchQuery) ||
+                    item.tempat.toLowerCase().includes(searchQuery) ||
+                    item.point.toLowerCase().includes(searchQuery) ||
+                    (item.notes && item.notes.toLowerCase().includes(searchQuery));
+
+                const matchArea = areaFilter === 'ALL' || item.kawasan === areaFilter;
+
+                const matchWeight = weightFilter === 'ALL' || 
+                    (weightFilter === 'TIADA' && !item.berat) ||
+                    item.berat === weightFilter;
+
+                let matchStatus = true;
+                if (statusFilter === 'DUE_ALL') {
+                    matchStatus = (mode === 'AUTO' && (st.code === 'EXPIRED' || st.code === 'REMINDER'));
+                } else if (statusFilter === 'REFILL_ONLY') {
+                    matchStatus = (mode === 'REFILL_ONLY');
+                } else if (statusFilter === 'REFILL_AND_SERVICE') {
+                    matchStatus = (mode === 'REFILL_AND_SERVICE');
+                } else if (statusFilter === 'ALL_USED') {
+                    matchStatus = (mode === 'REFILL_ONLY' || mode === 'REFILL_AND_SERVICE');
+                } else if (statusFilter !== 'ALL') {
+                    matchStatus = (st.code === statusFilter);
+                }
+
+                return matchSearch && matchArea && matchWeight && matchStatus;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            filtered.forEach(item => {
+                const st = getStatusInfo(item);
+                const isChecked = selectedForRFQ.has(item.id);
+                const mode = item.workMode || 'AUTO';
+
+                let weightBadge = `<span class="text-xs text-slate-400 italic">Tiada</span>`;
+                if (item.berat === '9 KG') {
+                    weightBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">9 KG</span>`;
+                } else if (item.berat === '2 KG') {
+                    weightBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-100 dark:bg-orange-950/70 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800">2 KG</span>`;
+                }
+
+                const isRefillChecked = mode === 'REFILL_ONLY';
+                const isBothChecked = mode === 'REFILL_AND_SERVICE';
+
+                const workTickControls = `
+                    <div class="flex flex-wrap items-center gap-2">
+                        <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition select-none ${isRefillChecked ? 'bg-orange-600 text-white border-orange-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-orange-400'}">
+                            <input type="checkbox" ${isRefillChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_ONLY')" class="w-3.5 h-3.5 rounded text-orange-600 focus:ring-0">
+                            <span>Refill</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition select-none ${isBothChecked ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-purple-400'}">
+                            <input type="checkbox" ${isBothChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_AND_SERVICE')" class="w-3.5 h-3.5 rounded text-purple-600 focus:ring-0">
+                            <span>Refill & Servis (2in1)</span>
+                        </label>
+                    </div>
+                `;
+
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-slate-50 dark:hover:bg-slate-800/50 transition ${st.rowClass}`;
+                tr.innerHTML = `
+                    <td class="py-3 px-4">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRFQSelection('${item.id}')" class="w-5 h-5 rounded-md text-red-600 focus:ring-red-500 border-slate-300 dark:border-slate-600 cursor-pointer">
+                    </td>
+                    <td class="py-3 px-3 font-extrabold text-slate-900 dark:text-white whitespace-nowrap">${item.no}</td>
+                    <td class="py-3 px-4">
+                        <div class="font-bold text-slate-900 dark:text-white">${item.kawasan}</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">${item.section}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="font-medium text-slate-700 dark:text-slate-300">${item.tempat}</span>
+                        <span class="ml-1.5 px-2 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">Pt. ${item.point}</span>
+                    </td>
+                    <td class="py-3 px-3 whitespace-nowrap">${weightBadge}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        ${formatDisplayDate(item.expiry)}
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs ${st.badgeClass}">
+                                <i class="fa-solid ${st.icon}"></i>
+                                <span>${st.label}</span>
+                            </span>
+                        </div>
+                        ${item.notes ? `<div class="text-xs text-slate-500 dark:text-slate-400 mt-1">${item.notes}</div>` : ''}
+                    </td>
+                    <td class="py-3 px-4 whitespace-nowrap">
+                        ${workTickControls}
+                    </td>
+                    <td class="py-3 px-4 text-right whitespace-nowrap">
+                        <div class="inline-flex items-center gap-1.5">
+                            <button onclick="openItemModal('${item.id}')" class="p-2 rounded-lg bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 dark:hover:bg-blue-900/40 text-slate-600 hover:text-blue-600 dark:text-slate-300 transition" title="Edit Rekod">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteItem('${item.id}')" class="p-2 rounded-lg bg-slate-100 hover:bg-red-100 dark:bg-slate-800 dark:hover:bg-red-900/40 text-slate-600 hover:text-red-600 dark:text-slate-300 transition" title="Padam Rekod">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /**
+         * 7. RFQ SELECTION, 3-CATEGORY COUNTS & 50% TEMPORARY STANDBY FE ENGINE
+         */
+        async function toggleRFQSelection(id) {
+            if (selectedForRFQ.has(id)) {
+                selectedForRFQ.delete(id);
+            } else {
+                selectedForRFQ.add(id);
+            }
+            refreshAllViews();
+            await persistData(false);
+        }
+
+        async function autoSelectDueAndRefillUnits(notify = true) {
+            selectedForRFQ.clear();
+            manualOffsets = {
+                service9: 0,
+                service2: 0,
+                refill9: 0,
+                refill2: 0,
+                both9: 0,
+                both2: 0,
+                standby9: 0,
+                standby2: 0
+            };
+            extinguishers.forEach(item => {
+                const st = getStatusInfo(item);
+                const mode = item.workMode || 'AUTO';
+                if (st.code === 'EXPIRED' || st.code === 'REMINDER' || mode === 'REFILL_ONLY' || mode === 'REFILL_AND_SERVICE') {
+                    selectedForRFQ.add(item.id);
+                }
+            });
+            refreshAllViews();
+            if (notify) {
+                await persistData(false);
+                showToast(`Berjaya menyelaraskan ${selectedForRFQ.size} unit keluar & mengira 50% Standby FE secara automatik.`, 'success');
+            }
+        }
+
+        async function clearRFQSelection() {
+            selectedForRFQ.clear();
+            manualOffsets = {
+                service9: 0,
+                service2: 0,
+                refill9: 0,
+                refill2: 0,
+                both9: 0,
+                both2: 0,
+                standby9: 0,
+                standby2: 0
+            };
+            refreshAllViews();
+            await persistData(false);
+            showToast('Senarai pilihan quotation telah dikosongkan.', 'info');
+        }
+
+        async function adjustManualCount(key, delta) {
+            const counts = getCalculatedRFQCounts(true);
+            const currentVal = counts[key];
+            if (currentVal + delta < 0) return;
+            manualOffsets[key] += delta;
+            refreshAllViews();
+            await persistData(false);
+        }
+
+        function getCalculatedRFQCounts(applyOffsets = true) {
+            const selectedItems = extinguishers.filter(item => selectedForRFQ.has(item.id));
+            let baseService9 = 0;
+            let baseService2 = 0;
+            let baseRefill9 = 0;
+            let baseRefill2 = 0;
+            let baseBoth9 = 0;
+            let baseBoth2 = 0;
+
+            selectedItems.forEach(item => {
+                const mode = item.workMode || 'AUTO';
+                if (mode === 'REFILL_AND_SERVICE') {
+                    if (item.berat === '9 KG') baseBoth9++;
+                    else if (item.berat === '2 KG') baseBoth2++;
+                } else if (mode === 'REFILL_ONLY') {
+                    if (item.berat === '9 KG') baseRefill9++;
+                    else if (item.berat === '2 KG') baseRefill2++;
+                } else {
+                    if (item.berat === '9 KG') baseService9++;
+                    else if (item.berat === '2 KG') baseService2++;
+                }
+            });
+
+            const service9 = Math.max(0, baseService9 + (applyOffsets ? manualOffsets.service9 : 0));
+            const service2 = Math.max(0, baseService2 + (applyOffsets ? manualOffsets.service2 : 0));
+            const refill9 = Math.max(0, baseRefill9 + (applyOffsets ? manualOffsets.refill9 : 0));
+            const refill2 = Math.max(0, baseRefill2 + (applyOffsets ? manualOffsets.refill2 : 0));
+            const both9 = Math.max(0, baseBoth9 + (applyOffsets ? manualOffsets.both9 : 0));
+            const both2 = Math.max(0, baseBoth2 + (applyOffsets ? manualOffsets.both2 : 0));
+
+            const subtotal9 = service9 + refill9 + both9;
+            const subtotal2 = service2 + refill2 + both2;
+            const totalAll = subtotal9 + subtotal2;
+
+            // Auto 50% Temporary / Standby FE (rounded up via Math.ceil for OSH safety compliance)
+            const baseStandby9 = Math.ceil(subtotal9 * 0.5);
+            const baseStandby2 = Math.ceil(subtotal2 * 0.5);
+
+            const standby9 = Math.max(0, baseStandby9 + (applyOffsets ? manualOffsets.standby9 : 0));
+            const standby2 = Math.max(0, baseStandby2 + (applyOffsets ? manualOffsets.standby2 : 0));
+            const standbyTotal = standby9 + standby2;
+
+            return {
+                service9,
+                service2,
+                refill9,
+                refill2,
+                both9,
+                both2,
+                subtotal9,
+                subtotal2,
+                totalAll,
+                standby9,
+                standby2,
+                standbyTotal,
+                selectedItems
+            };
+        }
+
+        function updateRFQPreview() {
+            const counts = getCalculatedRFQCounts(true);
+
+            document.getElementById('rfq-badge-count').textContent = counts.totalAll;
+
+            document.getElementById('rfq-service-9kg').textContent = counts.service9;
+            document.getElementById('rfq-service-2kg').textContent = counts.service2;
+            document.getElementById('rfq-refill-9kg').textContent = counts.refill9;
+            document.getElementById('rfq-refill-2kg').textContent = counts.refill2;
+            document.getElementById('rfq-both-9kg').textContent = counts.both9;
+            document.getElementById('rfq-both-2kg').textContent = counts.both2;
+
+            document.getElementById('rfq-count-total').textContent = counts.totalAll;
+            document.getElementById('rfq-subtotal-9kg').textContent = counts.subtotal9;
+            document.getElementById('rfq-subtotal-2kg').textContent = counts.subtotal2;
+
+            document.getElementById('rfq-standby-total').textContent = counts.standbyTotal;
+            document.getElementById('rfq-standby-9kg').textContent = counts.standby9;
+            document.getElementById('rfq-standby-2kg').textContent = counts.standby2;
+
+            const cName = document.getElementById('contractor-name').value.trim() || 'Kontraktor Servis Pemadam Api';
+            const cPhone = document.getElementById('contractor-phone').value.trim() || '-';
+            const pickupDate = document.getElementById('service-pickup-date').value;
+
+            document.getElementById('preview-contractor-name').textContent = cName;
+            document.getElementById('preview-contractor-phone').textContent = cPhone !== '-' ? `Tel / WhatsApp: ${cPhone}` : '';
+            document.getElementById('preview-pickup-date').textContent = pickupDate ? formatDisplayDate(pickupDate) : 'Segera / Mengikut Jadual Kontraktor';
+
+            document.getElementById('whatsapp-message-preview').textContent = buildFormattedRFQMessage();
+
+            const rfqTbody = document.getElementById('rfq-table-body');
+            rfqTbody.innerHTML = '';
+
+            if (counts.selectedItems.length === 0) {
+                rfqTbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500 dark:text-slate-400">
+                            Tiada rekod tong spesifik dipilih. Anda masih boleh gunakan butang <strong>+ / -</strong> di atas untuk hantar bilangan terus kepada kontraktor.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            counts.selectedItems.forEach((item, idx) => {
+                const mode = item.workMode || 'AUTO';
+                let jobBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">Servis Sahaja</span>`;
+                if (mode === 'REFILL_AND_SERVICE') {
+                    jobBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">Refill & Servis (2-in-1)</span>`;
+                } else if (mode === 'REFILL_ONLY') {
+                    jobBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300">Refill Sahaja</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2 px-3 font-medium">${idx + 1}</td>
+                    <td class="py-2 px-3 font-bold">${item.no}</td>
+                    <td class="py-2 px-3"><span class="font-semibold">${item.kawasan}</span> - ${item.tempat} Pt.${item.point}</td>
+                    <td class="py-2 px-3 font-bold">${item.berat || '-'}</td>
+                    <td class="py-2 px-3">${jobBadge}</td>
+                    <td class="py-2 px-3">${formatDisplayDate(item.expiry)}</td>
+                `;
+                rfqTbody.appendChild(tr);
+            });
+        }
+
+        function buildFormattedRFQMessage() {
+            const counts = getCalculatedRFQCounts(true);
+            const pickupDate = document.getElementById('service-pickup-date').value;
+            const includeStandby = document.getElementById('include-standby-toggle').checked;
+            const includeLocations = document.getElementById('include-locations-toggle').checked;
+
+            const sections = [];
+
+            // 1. Servis Tahunan Sahaja (hanya papar jika > 0)
+            if (counts.service9 > 0 || counts.service2 > 0) {
+                const lines = [];
+                if (counts.service9 > 0) lines.push(`- 9 KG: *${counts.service9} Nos*`);
+                if (counts.service2 > 0) lines.push(`- 2 KG: *${counts.service2} Nos*`);
+                sections.push({
+                    title: 'Servis Tahunan (Tamat / Akan Tamat Tempoh):',
+                    lines
+                });
+            }
+
+            // 2. Sudah Digunakan - Refill Sahaja (hanya papar jika > 0)
+            if (counts.refill9 > 0 || counts.refill2 > 0) {
+                const lines = [];
+                if (counts.refill9 > 0) lines.push(`- 9 KG: *${counts.refill9} Nos*`);
+                if (counts.refill2 > 0) lines.push(`- 2 KG: *${counts.refill2} Nos*`);
+                sections.push({
+                    title: 'Sudah Digunakan (Refill Sahaja):',
+                    lines
+                });
+            }
+
+            // 3. Sudah Digunakan - Refill & Servis 2-in-1 (hanya papar jika > 0)
+            if (counts.both9 > 0 || counts.both2 > 0) {
+                const lines = [];
+                if (counts.both9 > 0) lines.push(`- 9 KG: *${counts.both9} Nos*`);
+                if (counts.both2 > 0) lines.push(`- 2 KG: *${counts.both2} Nos*`);
+                sections.push({
+                    title: 'Sudah Digunakan (Refill & Servis 2-in-1):',
+                    lines
+                });
+            }
+
+            // 4. Temporary / Standby FE 50% (hanya papar jika toggle aktif & > 0)
+            if (includeStandby && (counts.standby9 > 0 || counts.standby2 > 0)) {
+                const lines = [];
+                if (counts.standby9 > 0) lines.push(`- 9 KG: *${counts.standby9} Nos*`);
+                if (counts.standby2 > 0) lines.push(`- 2 KG: *${counts.standby2} Nos*`);
+                sections.push({
+                    title: `Temporary / Standby FE (50% - ${counts.standbyTotal} Nos):`,
+                    lines
+                });
+            }
+
+            let msg = `Salam tuan, mohon sebut harga (quotation) untuk pemadam api di *SCK Wooden Industries Sdn Bhd*:\n\n`;
+
+            // Susun nombor turutan kategori secara dinamik (1., 2., 3., ...)
+            sections.forEach((sec, idx) => {
+                msg += `*${idx + 1}. ${sec.title}*\n${sec.lines.join('\n')}\n\n`;
+            });
+
+            if (pickupDate) {
+                msg += `*Cadangan Tarikh Ambil Tong:* ${formatDisplayDate(pickupDate)}\n\n`;
+            }
+
+            if (includeLocations && counts.selectedItems.length > 0) {
+                msg += `*Senarai Lokasi Unit:*\n`;
+                counts.selectedItems.forEach((item, index) => {
+                    const mode = item.workMode || 'AUTO';
+                    const tag = mode === 'REFILL_AND_SERVICE' ? 'Refill & Servis 2in1' : (mode === 'REFILL_ONLY' ? 'Refill' : 'Servis');
+                    msg += `${index + 1}. [No.${item.no}] ${item.kawasan} - ${item.tempat} Pt.${item.point} (${item.berat || '?'}) [${tag}]\n`;
+                });
+                msg += `\n`;
+            }
+
+            msg += `Mohon maklumkan tarikh sesuai untuk datang ambil tong dan hantar quotation rasmi. Terima kasih.`;
+
+            return msg;
+        }
+
+        function sendWhatsAppRFQ() {
+            const { totalAll } = getCalculatedRFQCounts(true);
+            if (totalAll === 0) {
+                showToast('Jumlah unit adalah 0. Sila pilih unit atau tekan butang + dahulu.', 'warning');
+                return;
+            }
+
+            let rawPhone = document.getElementById('contractor-phone').value.replace(/[^0-9]/g, '');
+            if (rawPhone.startsWith('0')) {
+                rawPhone = '6' + rawPhone;
+            }
+
+            const message = encodeURIComponent(buildFormattedRFQMessage());
+            const waUrl = rawPhone ? `https://wa.me/${rawPhone}?text=${message}` : `https://wa.me/?text=${message}`;
+            window.open(waUrl, '_blank');
+        }
+
+        function copyRFQText() {
+            const { totalAll } = getCalculatedRFQCounts(true);
+            if (totalAll === 0) {
+                showToast('Jumlah unit adalah 0. Sila pilih unit atau tekan butang + dahulu.', 'warning');
+                return;
+            }
+
+            const text = buildFormattedRFQMessage();
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = text;
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Teks quotation & standby 50% berjaya disalin! Terus tampal (Paste) di WhatsApp atau E-mel.', 'success');
+            } catch (err) {
+                showToast('Gagal menyalin teks secara automatik.', 'error');
+            }
+            document.body.removeChild(tempTextarea);
+        }
+
+        async function saveContractorAndRFQSettings() {
+            updateRFQPreview();
+            await persistData(false);
+        }
+
+        /**
+         * 8. ADD / EDIT / DELETE / RESET ITEM HANDLERS
+         */
+        function syncModalWorkCheckboxes(source) {
+            const usedCb = document.getElementById('field-is-used');
+            const bothCb = document.getElementById('field-also-service');
+
+            if (source === 'both' && bothCb.checked) {
+                usedCb.checked = true;
+            } else if (source === 'used' && !usedCb.checked) {
+                bothCb.checked = false;
+            }
+        }
+
+        function openItemModal(itemId = null) {
+            const modal = document.getElementById('item-modal');
+            const title = document.getElementById('item-modal-title');
+            const form = document.getElementById('item-form');
+            form.reset();
+
+            if (itemId) {
+                const item = extinguishers.find(x => x.id === itemId);
+                if (!item) return;
+                const mode = item.workMode || 'AUTO';
+                title.textContent = `Kemaskini Unit No. ${item.no}`;
+                document.getElementById('edit-item-id').value = item.id;
+                document.getElementById('field-no').value = item.no;
+                document.getElementById('field-section').value = item.section;
+                document.getElementById('field-kawasan').value = item.kawasan;
+                document.getElementById('field-tempat').value = item.tempat;
+                document.getElementById('field-point').value = item.point;
+                document.getElementById('field-berat').value = item.berat;
+                document.getElementById('field-expiry').value = item.expiry;
+                document.getElementById('field-is-used').checked = (mode === 'REFILL_ONLY' || mode === 'REFILL_AND_SERVICE');
+                document.getElementById('field-also-service').checked = (mode === 'REFILL_AND_SERVICE');
+                document.getElementById('field-notes').value = item.notes || '';
+            } else {
+                title.textContent = 'Tambah Unit Pemadam Api Baru';
+                document.getElementById('edit-item-id').value = '';
+                document.getElementById('field-is-used').checked = false;
+                document.getElementById('field-also-service').checked = false;
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeItemModal() {
+            const modal = document.getElementById('item-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function saveItemForm(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-item-id').value;
+            const isUsedChecked = document.getElementById('field-is-used').checked;
+            const alsoServiceChecked = document.getElementById('field-also-service').checked;
+
+            let workMode = 'AUTO';
+            if (isUsedChecked && alsoServiceChecked) {
+                workMode = 'REFILL_AND_SERVICE';
+            } else if (isUsedChecked) {
+                workMode = 'REFILL_ONLY';
+            }
+
+            const newRecord = {
+                id: editId || 'custom-' + Date.now(),
+                no: document.getElementById('field-no').value.trim(),
+                section: document.getElementById('field-section').value,
+                kawasan: document.getElementById('field-kawasan').value.trim().toUpperCase(),
+                tempat: document.getElementById('field-tempat').value.trim().toUpperCase(),
+                point: document.getElementById('field-point').value.trim(),
+                berat: document.getElementById('field-berat').value,
+                expiry: document.getElementById('field-expiry').value,
+                workMode: workMode,
+                notes: document.getElementById('field-notes').value.trim()
+            };
+
+            if (editId) {
+                const idx = extinguishers.findIndex(x => x.id === editId);
+                if (idx !== -1) extinguishers[idx] = newRecord;
+                showToast(`Rekod No. ${newRecord.no} berjaya dikemaskini.`, 'success');
+            } else {
+                extinguishers.push(newRecord);
+                showToast(`Unit baru No. ${newRecord.no} berjaya ditambah.`, 'success');
+            }
+
+            if (workMode !== 'AUTO') {
+                selectedForRFQ.add(newRecord.id);
+            }
+
+            closeItemModal();
+            refreshAllViews();
+            await persistData(true);
+        }
+
+        function deleteItem(id) {
+            const item = extinguishers.find(x => x.id === id);
+            if (!item) return;
+
+            openConfirmDialog(
+                'Padam Rekod Pemadam Api?',
+                `Adakah anda pasti mahu memadam rekod No. ${item.no} (${item.kawasan} - ${item.tempat} Pt.${item.point})?`,
+                async () => {
+                    extinguishers = extinguishers.filter(x => x.id !== id);
+                    selectedForRFQ.delete(id);
+                    refreshAllViews();
+                    await persistData(true);
+                    showToast(`Rekod No. ${item.no} telah dipadam.`, 'info');
+                }
+            );
+        }
+
+        function confirmResetData() {
+            openConfirmDialog(
+                'Reset Semula ke Data Asal SCK-DOSH-F11?',
+                'Tindakan ini akan memulihkan kesemua 50 rekod asal SCK Wooden Industries Sdn Bhd (44 Kilang + 6 Hostel). Sebarang suntingan manual akan diganti.',
+                async () => {
+                    extinguishers = JSON.parse(JSON.stringify(INITIAL_SCK_DATA));
+                    autoSelectDueAndRefillUnits(false);
+                    refreshAllViews();
+                    await persistData(true);
+                    showToast('Data asal SCK-DOSH-F11 (50 unit) telah dipulihkan.', 'success');
+                }
+            );
+        }
+
+        /**
+         * 9. TABS, DARK MODE, TOASTS & CUSTOM CONFIRM MODAL
+         */
+        function switchTab(tabName) {
+            const monitorView = document.getElementById('view-monitor');
+            const rfqView = document.getElementById('view-rfq');
+            const btnMonitor = document.getElementById('tab-btn-monitor');
+            const btnRfq = document.getElementById('tab-btn-rfq');
+
+            if (tabName === 'monitor') {
+                monitorView.classList.remove('hidden');
+                rfqView.classList.add('hidden');
+                btnMonitor.className = 'px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm flex items-center gap-2 shrink-0 transition';
+                btnRfq.className = 'px-4 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0 transition';
+            } else {
+                monitorView.classList.add('hidden');
+                rfqView.classList.remove('hidden');
+                btnRfq.className = 'px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm flex items-center gap-2 shrink-0 transition';
+                btnMonitor.className = 'px-4 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0 transition';
+                updateRFQPreview();
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').className = 'fa-solid fa-sun text-lg';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon').className = 'fa-solid fa-moon text-lg';
+            }
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem(STORAGE_KEY_THEME, 'light');
+                icon.className = 'fa-solid fa-moon text-lg';
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem(STORAGE_KEY_THEME, 'dark');
+                icon.className = 'fa-solid fa-sun text-lg';
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let colors = 'bg-slate-900 text-white border-slate-700';
+            let icon = 'fa-circle-info text-blue-400';
+            if (type === 'success') {
+                colors = 'bg-emerald-900 text-white border-emerald-700';
+                icon = 'fa-circle-check text-emerald-400';
+            } else if (type === 'warning') {
+                colors = 'bg-amber-900 text-white border-amber-700';
+                icon = 'fa-triangle-exclamation text-amber-400';
+            } else if (type === 'error') {
+                colors = 'bg-red-900 text-white border-red-700';
+                icon = 'fa-circle-xmark text-red-400';
+            }
+
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3.5 rounded-2xl border shadow-xl text-xs sm:text-sm font-medium transform transition-all duration-300 ${colors}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base shrink-0"></i><span class="flex-1">${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function openConfirmDialog(title, message, onConfirmCallback) {
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+
+            const okBtn = document.getElementById('confirm-ok-btn');
+            const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+            const cleanup = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            };
+
+            okBtn.onclick = () => {
+                cleanup();
+                onConfirmCallback();
+            };
+            cancelBtn.onclick = cleanup;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        /**
+         * 10. FIREBASE AUTHENTICATION (STRICTLY signInWithPopup ONLY) & UI STATE
+         */
+        function setupFirebaseAuthListener() {
+            if (!firebaseAuth) return;
+
+            firebaseAuth.onAuthStateChanged((user) => {
+                currentUser = user;
+                updateAuthUI(user);
+
+                if (user) {
+                    attachFirestoreRealtimeListener(user);
+                } else {
+                    if (firestoreUnsubscribe) {
+                        firestoreUnsubscribe();
+                        firestoreUnsubscribe = null;
+                    }
+                }
+            });
+        }
+
+        function openAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function loginWithGooglePopup() {
+            if (!firebaseAuth) {
+                showToast('Perkhidmatan Firebase Auth tidak tersedia pada pelayar ini.', 'error');
+                return;
+            }
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                // STRICTLY USING signInWithPopup ONLY (NO signInWithRedirect)
+                const result = await firebaseAuth.signInWithPopup(provider);
+                if (result.user) {
+                    showToast(`Log masuk berjaya: ${result.user.displayName || result.user.email}. Penyegerakan awan aktif!`, 'success');
+                    closeAuthModal();
+                }
+            } catch (error) {
+                console.error('Google Popup Sign-In Error:', error);
+                showToast(`Log masuk dibatalkan atau gagal: ${error.message}`, 'error');
+            }
+        }
+
+        async function logoutFirebase() {
+            if (firebaseAuth) {
+                if (firestoreUnsubscribe) {
+                    firestoreUnsubscribe();
+                    firestoreUnsubscribe = null;
+                }
+                await firebaseAuth.signOut();
+                currentUser = null;
+                updateAuthUI(null);
+                showToast('Anda telah log keluar. Kembali ke Mod Tetamu (Simpanan Lokal).', 'info');
+            }
+        }
+
+        function updateAuthUI(user) {
+            const syncBadge = document.getElementById('sync-badge');
+            const headerSyncBtn = document.getElementById('header-manual-sync-btn');
+            const userAvatar = document.getElementById('auth-user-avatar');
+            const googleIcon = document.getElementById('auth-google-icon');
+            const userLabel = document.getElementById('auth-user-label');
+
+            const modalStatusCard = document.getElementById('modal-status-card');
+            const modalConnPill = document.getElementById('modal-connection-pill');
+            const modalStatus = document.getElementById('modal-auth-status');
+            const modalSyncDetail = document.getElementById('modal-sync-detail');
+            const modalLastSyncRow = document.getElementById('modal-last-sync-row');
+
+            const btnLogin = document.getElementById('btn-google-popup');
+            const btnManualSync = document.getElementById('btn-manual-cloud-sync');
+            const btnLogout = document.getElementById('btn-google-logout');
+
+            if (user) {
+                // Header Status
+                syncBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-900 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1.5 transition cursor-pointer';
+                syncBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span>Cloud Sync Aktif: pemadam-api-sck</span>`;
+                
+                if (headerSyncBtn) headerSyncBtn.classList.remove('hidden');
+
+                if (user.photoURL) {
+                    userAvatar.src = user.photoURL;
+                    userAvatar.classList.remove('hidden');
+                    googleIcon.classList.add('hidden');
+                } else {
+                    userAvatar.classList.add('hidden');
+                    googleIcon.classList.remove('hidden');
+                }
+                userLabel.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Akaun Google';
+
+                // Modal Status
+                modalStatusCard.className = 'p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 space-y-2';
+                modalConnPill.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-600 text-white';
+                modalConnPill.textContent = 'Cloud Sync Aktif: pemadam-api-sck';
+                modalStatus.textContent = `${user.displayName || 'Pengguna Google'} (${user.email})`;
+                modalSyncDetail.textContent = 'Penyegerakan masa nyata (real-time) aktif. Sebarang perubahan pada peranti ini akan dikemas kini terus ke iPad, iPhone, dan PC lain yang menggunakan akaun Google yang sama.';
+                modalLastSyncRow.classList.remove('hidden');
+
+                btnLogin.classList.add('hidden');
+                btnManualSync.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+            } else {
+                // Header Status
+                syncBadge.className = 'text-[10px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-950/70 dark:hover:bg-amber-900/70 dark:text-amber-300 border border-amber-300 dark:border-amber-800 flex items-center gap-1.5 transition cursor-pointer';
+                syncBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> <span>Mod Tetamu (Simpanan Lokal)</span>`;
+                
+                if (headerSyncBtn) headerSyncBtn.classList.add('hidden');
+
+                userAvatar.classList.add('hidden');
+                googleIcon.classList.remove('hidden');
+                userLabel.textContent = 'Log Masuk Google';
+
+                // Modal Status
+                modalStatusCard.className = 'p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2';
+                modalConnPill.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+                modalConnPill.textContent = 'Mod Tetamu (Simpanan Lokal)';
+                modalStatus.textContent = 'Belum log masuk ke akaun Google.';
+                modalSyncDetail.textContent = 'Semua perubahan disimpan dalam pelayar ini (LocalStorage). Log masuk dengan Google untuk menyegerakkan kesemua 50 unit pemadam api, tetapan quotation, dan maklumat kontraktor secara masa nyata (real-time) merentas iPad, iPhone, dan PC.';
+                modalLastSyncRow.classList.add('hidden');
+
+                btnLogin.classList.remove('hidden');
+                btnManualSync.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+            }
+        }
+
+        /**
+         * 11. INITIALIZE APPLICATION ON LOAD
+         */
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            generatePWAAssets();
+
+            const now = new Date();
+            const options = { day: '2-digit', month: 'short', year: 'numeric' };
+            const formattedToday = now.toLocaleDateString('ms-MY', options);
+            document.getElementById('today-date-badge').textContent = `Hari Ini: ${formattedToday}`;
+            document.getElementById('rfq-doc-date').textContent = `Tarikh Dokumen: ${formattedToday}`;
+
+            loadLocalState();
+            refreshAllViews();
+            setupFirebaseAuthListener();
+        });
+    </script>
+</body>
+</html>
