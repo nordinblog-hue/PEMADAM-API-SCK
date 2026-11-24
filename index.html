@@ -67,7 +67,11 @@
 
         /* Print Styles for Official SCK RFQ & Monthly Inspection Report */
         @media print {
-            body {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            html, body {
                 background: #ffffff !important;
                 color: #000000 !important;
                 font-size: 10pt !important;
@@ -79,6 +83,8 @@
                 display: block !important;
             }
             .print-container {
+                background: #ffffff !important;
+                color: #000000 !important;
                 box-shadow: none !important;
                 border: none !important;
                 padding: 0 !important;
@@ -86,19 +92,65 @@
                 width: 100% !important;
                 max-width: 100% !important;
             }
+            /* Paksa semua teks & bekas gelap menjadi hitam pekat di atas latar putih terang */
+            .print-container h1,
+            .print-container h2,
+            .print-container h3,
+            .print-container h4,
+            .print-container p,
+            .print-container span,
+            .print-container div,
+            .print-container td,
+            .print-container th {
+                color: #000000 !important;
+            }
+            .print-container .bg-slate-50,
+            .print-container .bg-slate-800,
+            .print-container .bg-slate-800\/60,
+            .print-container .bg-slate-800\/80,
+            .print-container .bg-slate-900,
+            .print-container .bg-emerald-50\/70,
+            .print-container .bg-emerald-50\/80,
+            .print-container .bg-amber-50\/70,
+            .print-container .bg-red-50\/70,
+            .print-container .bg-red-50\/80,
+            .print-container .bg-orange-50\/70,
+            .print-container .bg-orange-50\/90,
+            .print-container .bg-purple-50\/90,
+            .print-container .bg-sky-50\/70,
+            .print-container .bg-rose-50\/70,
+            .print-container .bg-blue-50,
+            .print-container .bg-white\/80,
+            .print-container .bg-white\/90 {
+                background-color: #ffffff !important;
+                border-color: #333333 !important;
+            }
+            /* Kekalkan kontras jelas untuk lencana utama */
+            #proof-doc-month-badge,
+            .print-container .bg-red-600,
+            .print-container .bg-emerald-600 {
+                background-color: #111827 !important;
+                color: #ffffff !important;
+                border: 1px solid #000000 !important;
+            }
+            #proof-doc-month-badge *,
+            .print-container .bg-red-600 *,
+            .print-container .bg-emerald-600 * {
+                color: #ffffff !important;
+            }
             table {
                 border-collapse: collapse !important;
                 width: 100% !important;
             }
             th, td {
-                border: 1px solid #333333 !important;
+                border: 1px solid #222222 !important;
                 padding: 4px 6px !important;
                 color: #000000 !important;
+                background: #ffffff !important;
             }
             th {
-                background-color: #f3f4f6 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                background-color: #e5e7eb !important;
+                font-weight: 800 !important;
             }
         }
     </style>
@@ -625,10 +677,14 @@
                             <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2.5">
                                 1. Ringkasan Eksekutif Status Keselamatan Pemadam Api
                             </h3>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5">
                                 <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center">
                                     <span class="text-[10px] font-bold uppercase text-slate-500 block">Jumlah Unit</span>
                                     <span id="proof-stat-total" class="text-xl font-extrabold text-slate-900 dark:text-white">50</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-teal-50/80 dark:bg-teal-950/30 border border-teal-300 dark:border-teal-800 text-center">
+                                    <span class="text-[10px] font-bold uppercase text-teal-800 dark:text-teal-300 block">Dah Check</span>
+                                    <span id="proof-stat-checked" class="text-xl font-extrabold text-teal-800 dark:text-teal-300">0/50</span>
                                 </div>
                                 <div class="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-center">
                                     <span class="text-[10px] font-bold uppercase text-emerald-700 dark:text-emerald-300 block">Aktif / Baik</span>
@@ -676,8 +732,8 @@
                         <!-- Complete 50-Unit Verification Checklist Table -->
                         <div>
                             <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2.5 flex items-center justify-between">
-                                <span>2. Senarai Lengkap Semakan Semua Unit (Kilang & Hostel)</span>
-                                <span class="text-[11px] font-normal text-slate-500">Disahkan &bull; SCK-DOSH-F11</span>
+                                <span>2. Senarai Lengkap Semakan Semua Unit (Berdasarkan Semakan Fizikal)</span>
+                                <span class="text-[11px] font-normal text-slate-500 no-print">Selaras dengan tanda [✓] di jadual utama</span>
                             </h3>
                             <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
                                 <table class="w-full text-left border-collapse text-[11px] sm:text-xs">
@@ -689,7 +745,7 @@
                                             <th class="py-2 px-2.5 font-bold">Berat</th>
                                             <th class="py-2 px-2.5 font-bold">Tarikh Tamat</th>
                                             <th class="py-2 px-2.5 font-bold">Status & Tindakan</th>
-                                            <th class="py-2 px-2.5 font-bold text-center">Semak</th>
+                                            <th class="py-2 px-2.5 font-bold text-center">Status Semak</th>
                                         </tr>
                                     </thead>
                                     <tbody id="proof-checklist-tbody" class="divide-y divide-slate-200 dark:divide-slate-700">
@@ -705,14 +761,14 @@
                                 <p class="font-bold text-slate-800 dark:text-slate-200">Disediakan & Diperiksa Oleh:</p>
                                 <div class="h-12 border-b border-slate-400 w-56 mt-4"></div>
                                 <p class="mt-1.5 font-bold text-slate-900 dark:text-white" id="proof-sign-inspector">Pegawai Keselamatan / Pentadbiran</p>
-                                <p class="text-slate-500">SCK Wooden Industries Sdn Bhd</p>
-                            </div>
-                            <div>
-                                <p class="font-bold text-slate-800 dark:text-slate-200">Disemak & Disahkan Oleh (Pengurusan / Boss):</p>
-                                <div class="h-12 border-b border-slate-400 w-56 mt-4"></div>
-                                <p class="mt-1.5 font-bold text-slate-900 dark:text-white">Pengurus Kilang / Pengarah Urusan</p>
-                                <p class="text-slate-500">Tarikh & Cop Rasmi Syarikat:</p>
-                            </div>
+                        <!-- Official Computer-Generated Document Footer (No Signature Required) -->
+                        <div class="mt-8 pt-4 border-t-2 border-slate-300 dark:border-slate-700 text-center space-y-1">
+                            <p class="text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                                DOKUMEN CETAKAN KOMPUTER — TIDAK MEMERLUKAN TANDATANGAN
+                            </p>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400">
+                                Laporan ini dijana secara elektronik melalui Sistem Pantau Pemadam Api SCK Wooden Industries Sdn Bhd (Rujukan: SCK-DOSH-F11) &bull; Disahkan oleh: <span id="proof-sign-inspector" class="font-bold">Pegawai Keselamatan / Pentadbiran</span>
+                            </p>
                         </div>
 
                     </div>
@@ -802,7 +858,7 @@
                             <span>Salin Teks Mesej Simple (Clipboard)</span>
                         </button>
 
-                        <button onclick="window.print()" class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <button type="button" onclick="triggerDocumentPrint('rfq')" class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition active:scale-95">
                             <i class="fa-solid fa-print text-base"></i>
                             <span>Cetak / Simpan PDF Rasmi</span>
                         </button>
@@ -1036,14 +1092,14 @@
                         <div class="hidden print-only mt-10 pt-6 border-t border-slate-300 grid grid-cols-2 gap-8 text-xs">
                             <div>
                                 <p class="font-bold">Disediakan Oleh (SCK Wooden Industries Sdn Bhd):</p>
-                                <div class="h-12 border-b border-slate-400 w-48 mt-4"></div>
-                                <p class="mt-1">Pegawai Keselamatan / Pentadbiran</p>
-                            </div>
-                            <div>
-                                <p class="font-bold">Pengesahan Kontraktor (Kutipan & Standby FE):</p>
-                                <div class="h-12 border-b border-slate-400 w-48 mt-4"></div>
-                                <p class="mt-1">Nama, Cop Syarikat & Tarikh</p>
-                            </div>
+                        <!-- Print Footer Computer-Generated Notice -->
+                        <div class="hidden print-only mt-8 pt-4 border-t border-slate-300 text-center space-y-1 text-xs">
+                            <p class="font-extrabold uppercase tracking-wider">
+                                DOKUMEN CETAKAN KOMPUTER — TIDAK MEMERLUKAN TANDATANGAN
+                            </p>
+                            <p class="text-[11px]">
+                                Dijana secara elektronik oleh SCK Wooden Industries Sdn Bhd (Ref: SCK-DOSH-F11).
+                            </p>
                         </div>
 
                     </div>
@@ -2545,6 +2601,7 @@
 
         function computeCurrentExecutiveSummary() {
             let total = extinguishers.length;
+            let checked = 0;
             let active = 0;
             let service = 0;
             let refillAndBoth = 0;
@@ -2552,6 +2609,8 @@
             let empty = 0;
 
             extinguishers.forEach(item => {
+                if (item.monthlyChecked) checked++;
+
                 const st = getStatusInfo(item);
                 const mode = item.workMode || 'AUTO';
                 const loc = item.locationStatus || 'NORMAL';
@@ -2568,7 +2627,7 @@
                 }
             });
 
-            return { total, active, service, refillAndBoth, temp, empty };
+            return { total, checked, active, service, refillAndBoth, temp, empty };
         }
 
         function renderMonthlyProofView() {
@@ -2613,6 +2672,9 @@
 
             const summary = cert ? cert.summary : computeCurrentExecutiveSummary();
             const recordsToDisplay = cert && Array.isArray(cert.snapshotRecords) ? cert.snapshotRecords : extinguishers;
+            const checkedCount = typeof summary.checked === 'number'
+                ? summary.checked
+                : recordsToDisplay.filter(x => Boolean(x.monthlyChecked)).length;
 
             if (cert) {
                 if (banner) banner.className = 'mb-6 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
@@ -2623,11 +2685,11 @@
                     title.className = 'text-base font-extrabold text-emerald-900 dark:text-emerald-200';
                 }
                 if (pill) {
-                    pill.textContent = 'VERIFIED CHECKED ✓';
+                    pill.textContent = `VERIFIED (${checkedCount}/${summary.total} UNIT)`;
                     pill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-600 text-white';
                 }
                 if (subtitle) {
-                    subtitle.innerHTML = `Pemeriksaan fizikal bulanan telah disahkan oleh <strong>${cert.inspectorName}</strong> pada <strong>${cert.certifiedAtDisplay}</strong>.`;
+                    subtitle.innerHTML = `Pemeriksaan fizikal bulanan (${checkedCount}/${summary.total} unit diperiksa) telah disahkan oleh <strong>${cert.inspectorName}</strong> pada <strong>${cert.certifiedAtDisplay}</strong>.`;
                 }
                 if (seal) {
                     seal.classList.remove('hidden');
@@ -2644,11 +2706,11 @@
                     title.className = 'text-base font-extrabold text-amber-900 dark:text-amber-200';
                 }
                 if (pill) {
-                    pill.textContent = 'BELUM DISAHKAN';
+                    pill.textContent = `SEMAKAN SEMASA: ${checkedCount}/${summary.total}`;
                     pill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-200 text-amber-900';
                 }
                 if (subtitle) {
-                    subtitle.innerHTML = `Sila tekan butang <strong>"Sahkan & Cop Siap Check Bulan Ini"</strong> selepas selesai memeriksa semua unit pemadam api.`;
+                    subtitle.innerHTML = `Rekod di bawah selaras secara langsung dengan tanda <strong>[✓] Dah Check</strong> di jadual utama (${checkedCount} daripada ${summary.total} unit sudah ditanda).`;
                 }
                 if (seal) seal.classList.add('hidden');
                 if (unverifyBtn) unverifyBtn.classList.add('hidden');
@@ -2656,6 +2718,8 @@
 
             // Executive Summary Numbers
             document.getElementById('proof-stat-total').textContent = summary.total;
+            const checkedStatEl = document.getElementById('proof-stat-checked');
+            if (checkedStatEl) checkedStatEl.textContent = `${checkedCount}/${summary.total}`;
             document.getElementById('proof-stat-active').textContent = summary.active;
             document.getElementById('proof-stat-service').textContent = summary.service;
             document.getElementById('proof-stat-refill').textContent = summary.refillAndBoth;
@@ -2664,13 +2728,13 @@
 
             // Inspector & Remarks Preview
             const activeInspector = cert ? cert.inspectorName : (inspectorInputVal || 'Pegawai Keselamatan / PIC');
-            const activeRemarks = cert ? (cert.remarks || 'Semua unit pemadam api telah diperiksa mengikut jadual bulanan.') : (remarksInputVal || 'Tiada catatan tambahan.');
+            const activeRemarks = cert ? (cert.remarks || `Pemeriksaan bulanan selesai (${checkedCount}/${summary.total} unit diperiksa).`) : (remarksInputVal || 'Tiada catatan tambahan.');
             document.getElementById('proof-preview-inspector').textContent = activeInspector;
             document.getElementById('proof-sign-inspector').textContent = activeInspector;
             document.getElementById('proof-preview-timestamp').textContent = cert ? cert.certifiedAtDisplay : 'Belum Disahkan';
             document.getElementById('proof-preview-remarks').textContent = activeRemarks;
 
-            // Populate Complete Checklist Table
+            // Populate Complete Checklist Table (Directly synced with item.monthlyChecked)
             const tbody = document.getElementById('proof-checklist-tbody');
             if (tbody) {
                 tbody.innerHTML = '';
@@ -2678,6 +2742,7 @@
                     const st = getStatusInfo(item);
                     const mode = item.workMode || 'AUTO';
                     const loc = item.locationStatus || 'NORMAL';
+                    const isChecked = Boolean(item.monthlyChecked);
 
                     let statusText = 'Aktif / Baik';
                     if (loc === 'EMPTY') statusText = 'LOKASI KOSONG (Tiada FE)';
@@ -2687,7 +2752,14 @@
                     else if (mode === 'SERVICE_ONLY' || st.code === 'EXPIRED' || st.code === 'REMINDER') statusText = 'Perlu Servis Tahunan';
                     else if (st.code === 'CHECK') statusText = 'Tiada Rekod Tarikh (X)';
 
+                    const checkCellHtml = isChecked
+                        ? `<span class="font-extrabold text-emerald-700 dark:text-emerald-400">[ ✓ ] Dah Check</span>${item.monthlyCheckedAt ? `<span class="block text-[9px] text-slate-500">${item.monthlyCheckedAt}</span>` : ''}`
+                        : `<span class="font-bold text-amber-700 dark:text-amber-400">[   ] Belum</span>`;
+
                     const tr = document.createElement('tr');
+                    if (!isChecked) {
+                        tr.className = 'bg-amber-50/40 dark:bg-amber-950/10';
+                    }
                     tr.innerHTML = `
                         <td class="py-1.5 px-2.5 font-bold">${item.no}</td>
                         <td class="py-1.5 px-2.5 font-semibold">${item.kawasan}</td>
@@ -2695,7 +2767,7 @@
                         <td class="py-1.5 px-2.5 font-bold">${item.berat || '-'}</td>
                         <td class="py-1.5 px-2.5">${formatDisplayDate(item.expiry)}</td>
                         <td class="py-1.5 px-2.5 font-semibold">${statusText}</td>
-                        <td class="py-1.5 px-2.5 text-center font-extrabold text-emerald-700">${item.monthlyChecked || cert ? '[ ✓ ]' : '[   ]'}</td>
+                        <td class="py-1.5 px-2.5 text-center">${checkCellHtml}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -2742,15 +2814,18 @@
         async function certifyCurrentMonth() {
             const monthKey = document.getElementById('proof-month-picker')?.value || '2026-11';
             const inspectorName = document.getElementById('proof-inspector-name')?.value.trim() || 'Pegawai Keselamatan / PIC';
-            const remarks = document.getElementById('proof-remarks')?.value.trim() || 'Semua unit pemadam api telah diperiksa fizikal dan direkodkan mengikut piawaian SCK-DOSH-F11.';
+            const currentSummary = computeCurrentExecutiveSummary();
+            const remarks = document.getElementById('proof-remarks')?.value.trim() || `Pemeriksaan fizikal bulanan selesai (${currentSummary.checked} daripada ${currentSummary.total} unit diperiksa) mengikut piawaian SCK-DOSH-F11.`;
 
             const now = new Date();
             const certifiedAtDisplay = now.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
             const certifiedDateShort = now.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
+            // Preserve the exact physical check status (monthlyChecked) from the main table
             const snapshotRecords = extinguishers.map(item => ({
                 ...item,
-                monthlyChecked: true
+                monthlyChecked: Boolean(item.monthlyChecked),
+                monthlyCheckedAt: item.monthlyCheckedAt || ''
             }));
 
             monthlyCertifications[monthKey] = {
@@ -2759,13 +2834,13 @@
                 remarks,
                 certifiedAtDisplay,
                 certifiedDateShort,
-                summary: computeCurrentExecutiveSummary(),
+                summary: currentSummary,
                 snapshotRecords
             };
 
             renderMonthlyProofView();
             await persistData(true);
-            showToast(`Pengesahan pemeriksaan ${formatMonthYearLabel(monthKey)} berjaya direkod dan dicop!`, 'success');
+            showToast(`Pengesahan ${formatMonthYearLabel(monthKey)} (${currentSummary.checked}/${currentSummary.total} unit diperiksa) berjaya disimpan!`, 'success');
         }
 
         function deleteMonthCertification() {
@@ -2783,7 +2858,72 @@
         }
 
         function printMonthlyProofReport() {
-            window.print();
+            triggerDocumentPrint('monthly-proof');
+        }
+
+        function triggerDocumentPrint(sectionType) {
+            const targetSectionId = sectionType === 'rfq' ? 'view-rfq' : 'view-monthly-proof';
+            const printEl = document.querySelector(`#${targetSectionId} .print-container`);
+
+            if (!printEl) {
+                window.print();
+                return;
+            }
+
+            // Buka tetingkap cetakan bersih supaya berfungsi walaupun dalam iframe / mobile Safari
+            const printWin = window.open('', '_blank', 'width=980,height=780');
+            if (printWin) {
+                const cloned = printEl.cloneNode(true);
+                cloned.querySelectorAll('.no-print').forEach(el => el.remove());
+                cloned.querySelectorAll('.print-only').forEach(el => {
+                    el.classList.remove('hidden');
+                    el.style.display = 'block';
+                });
+
+                printWin.document.open();
+                printWin.document.write(`
+                    <!DOCTYPE html>
+                    <html lang="ms">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Cetakan Rasmi - SCK Wooden Industries Sdn Bhd</title>
+                        <script src="https://cdn.tailwindcss.com"><\/script>
+                        <style>
+                            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                            body { background: #ffffff !important; color: #000000 !important; font-family: Arial, sans-serif; padding: 18px; font-size: 10pt; }
+                            h1, h2, h3, h4, p, span, div, td, th { color: #000000 !important; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+                            th, td { border: 1px solid #222222 !important; padding: 5px 7px !important; text-align: left; }
+                            th { background-color: #e5e7eb !important; font-weight: 800; }
+                            #proof-doc-month-badge, .bg-red-600, .bg-emerald-600 { background-color: #111827 !important; color: #ffffff !important; padding: 4px 10px; border-radius: 6px; }
+                            #proof-doc-month-badge *, .bg-red-600 *, .bg-emerald-600 * { color: #ffffff !important; }
+                            @media print {
+                                .print-action-bar { display: none !important; }
+                                body { padding: 0; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="print-action-bar" style="background:#fef3c7;border:1px solid #f59e0b;padding:10px 14px;border-radius:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:12px;font-weight:bold;">Pratonton Cetakan Rasmi SCK Wooden Industries</span>
+                            <button onclick="window.print()" style="background:#059669;color:#fff !important;border:none;padding:8px 16px;border-radius:8px;font-weight:bold;cursor:pointer;">Cetak / Simpan PDF Sekarang</button>
+                        </div>
+                        ${cloned.innerHTML}
+                        <script>
+                            setTimeout(function() {
+                                window.focus();
+                                window.print();
+                            }, 650);
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                printWin.document.close();
+            } else {
+                // Fallback jika pop-up disekat pelayar
+                showToast('Sila benarkan pop-up pelayar atau tekan Ctrl+P / Cmd+P untuk mencetak.', 'info');
+                window.print();
+            }
         }
 
         /**
