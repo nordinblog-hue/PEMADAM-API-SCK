@@ -218,6 +218,36 @@
     <!-- Main Content Wrapper -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
+        <!-- Monthly Physical Round Progress Bar (Rondaan Tiang ke Tiang) -->
+        <div class="mb-4 bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800/70 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
+            <div class="flex-1 w-full">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                        </span>
+                        <span class="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
+                            Progress Rondaan Fizikal Bulan Ini (<span id="round-month-label">NOV 2026</span>)
+                        </span>
+                    </div>
+                    <span id="round-progress-text" class="text-xs font-extrabold text-emerald-700 dark:text-emerald-400">
+                        0 / 50 Unit Selesai (0%)
+                    </span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div id="round-progress-bar" class="h-full bg-emerald-600 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                <button onclick="quickFilterPill('UNCHECKED')" class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300 transition">
+                    <i class="fa-solid fa-magnifying-glass-location mr-1"></i> Lihat Belum Check (<span id="round-unchecked-count">50</span>)
+                </button>
+                <button onclick="confirmResetMonthlyCheck()" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition" title="Kosongkan semua tanda Check untuk mulakan rondaan bulan baharu">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Reset Bulan Baru
+                </button>
+            </div>
+        </div>
+
         <!-- Date, Cloud Sync & Reminder Banner -->
         <div class="mb-6 bg-gradient-to-r from-amber-500/10 via-red-500/10 to-blue-500/10 dark:from-amber-900/20 dark:via-red-900/20 dark:to-blue-900/20 border border-amber-300/60 dark:border-amber-700/50 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print">
             <div class="flex items-start sm:items-center gap-3.5">
@@ -365,6 +395,12 @@
                 <button onclick="quickFilterPill('ALL')" id="pill-ALL" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition shrink-0">
                     Semua Rekod
                 </button>
+                <button onclick="quickFilterPill('UNCHECKED')" id="pill-UNCHECKED" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition shrink-0">
+                    <i class="fa-regular fa-square mr-1"></i> Belum Check Bulan Ini
+                </button>
+                <button onclick="quickFilterPill('CHECKED')" id="pill-CHECKED" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition shrink-0">
+                    <i class="fa-solid fa-square-check mr-1"></i> Dah Check (Settle)
+                </button>
                 <button onclick="quickFilterPill('DUE_ALL')" id="pill-DUE_ALL" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/60 hover:bg-red-50 dark:hover:bg-red-950/40 transition shrink-0">
                     <i class="fa-solid fa-bell text-amber-500 mr-1"></i> Servis Tahunan (Tamat / &le; 1 Bln)
                 </button>
@@ -422,6 +458,8 @@
                 <div>
                     <select id="filter-status" onchange="renderTable()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500">
                         <option value="ALL">Semua Status & Lokasi</option>
+                        <option value="UNCHECKED">Belum Check Rondaan Bulan Ini</option>
+                        <option value="CHECKED">Dah Check Rondaan (Settle)</option>
                         <option value="LOC_ALERT">Sedang Servis (Temporary / Kosong)</option>
                         <option value="LOC_TEMP">Diganti Temporary FE Sahaja</option>
                         <option value="LOC_EMPTY">Lokasi Kosong / Tiada FE Sahaja</option>
@@ -443,6 +481,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                         <tr class="bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                            <th class="py-3.5 px-3 font-bold bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300">Semak Fizikal</th>
                             <th class="py-3.5 px-3 font-bold">Pilih RFQ</th>
                             <th class="py-3.5 px-3 font-bold">No.</th>
                             <th class="py-3.5 px-3 font-bold">Kawasan</th>
@@ -1417,81 +1456,11 @@
             standby9: 0,
             standby2: 0
         };
-        let currentCardFilter = 'ALL';
 
-        const STORAGE_KEY_DATA = 'sck_fire_extinguishers_v3';
-        const STORAGE_KEY_THEME = 'sck_fire_theme_v1';
-        const STORAGE_KEY_CONTRACTOR = 'sck_fire_contractor_v2';
-        const STORAGE_KEY_RFQ_STATE = 'sck_fire_rfq_state_v1';
-        const STORAGE_KEY_MONTHLY_PROOFS = 'sck_fire_monthly_proofs_v1';
-
-        /**
-         * 4. EXPIRY & EARLY REMINDER CALCULATION ENGINE
-         */
-        function getStatusInfo(item) {
-            const expiryDateStr = item.expiry;
-            const workMode = item.workMode || 'AUTO';
-            const locStatus = item.locationStatus || 'NORMAL';
-
-            let customRowHighlight = '';
-            if (locStatus === 'EMPTY') {
-                customRowHighlight = 'bg-rose-50/90 dark:bg-rose-950/35';
-            } else if (locStatus === 'TEMP') {
-                customRowHighlight = 'bg-sky-50/85 dark:bg-sky-950/30';
-            } else if (workMode === 'REFILL_AND_SERVICE') {
-                customRowHighlight = 'bg-purple-50/75 dark:bg-purple-950/25';
-            } else if (workMode === 'REFILL_ONLY') {
-                customRowHighlight = 'bg-orange-50/75 dark:bg-orange-950/25';
-            } else if (workMode === 'SERVICE_ONLY') {
-                customRowHighlight = 'bg-blue-50/75 dark:bg-blue-950/25';
-            }
-
-            if (!expiryDateStr) {
-                return {
-                    code: 'CHECK',
-                    label: 'Perlu Semakan',
-                    daysLeft: null,
-                    badgeClass: 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700',
-                    rowClass: customRowHighlight || 'bg-slate-100/60 dark:bg-slate-900/40',
-                    icon: 'fa-circle-question'
-                };
-            }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const expDate = new Date(expiryDateStr + 'T00:00:00');
-            const diffTime = expDate.getTime() - today.getTime();
-            const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (daysLeft < 0) {
-                return {
-                    code: 'EXPIRED',
-                    label: `Tamat Tempoh (${Math.abs(daysLeft)} hari lepas)`,
-                    daysLeft: daysLeft,
-                    badgeClass: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border border-red-300 dark:border-red-800 font-bold',
-                    rowClass: customRowHighlight || 'bg-red-50/70 dark:bg-red-950/25',
-                    icon: 'fa-triangle-exclamation'
-                };
-            } else if (daysLeft <= 31) {
-                return {
-                    code: 'REMINDER',
-                    label: `Reminder Kontraktor (${daysLeft} hari lagi)`,
-                    daysLeft: daysLeft,
-                    badgeClass: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-bold',
-                    rowClass: customRowHighlight || 'bg-amber-50/70 dark:bg-amber-950/20',
-                    icon: 'fa-bell'
-                };
-            } else {
-                return {
-                    code: 'ACTIVE',
-                    label: `Aktif (${daysLeft} hari lagi)`,
-                    daysLeft: daysLeft,
-                    badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
-                    rowClass: customRowHighlight,
-                    icon: 'fa-check-circle'
-                };
-            }
-        }
+        const STORAGE_KEY_ITEMS = 'sck_fe_items_v5';
+        const STORAGE_KEY_RFQ = 'sck_fe_rfq_v5';
+        const STORAGE_KEY_MONTHLY = 'sck_fe_monthly_certs_v1';
+        const STORAGE_KEY_THEME = 'sck_fe_theme_v1';
 
         function normalizeItemRecord(item) {
             let mode = item.workMode || 'AUTO';
@@ -1501,7 +1470,9 @@
             return {
                 ...item,
                 workMode: mode,
-                locationStatus: item.locationStatus || 'NORMAL'
+                locationStatus: item.locationStatus || 'NORMAL',
+                monthlyChecked: Boolean(item.monthlyChecked),
+                monthlyCheckedAt: item.monthlyCheckedAt || ''
             };
         }
 
@@ -1513,148 +1484,164 @@
         }
 
         /**
-         * 5. DATA PERSISTENCE & REAL-TIME FIRESTORE SYNC
-         * Laluan Firestore: users/{userId}/sck_fire_extinguishers/master_data
+         * 4. EXPIRY & EARLY REMINDER CALCULATION ENGINE
          */
-        function getMasterDocRef(uid) {
-            if (!firebaseDb || !uid) return null;
-            return firebaseDb
-                .collection('users')
-                .doc(uid)
-                .collection('sck_fire_extinguishers')
-                .doc('master_data');
+        function getStatusInfo(item) {
+            if (!item.expiry) {
+                return {
+                    code: 'CHECK',
+                    label: 'Tiada Tarikh / Semak (X)',
+                    badgeClass: 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200',
+                    rowClass: 'bg-slate-50/60 dark:bg-slate-800/30',
+                    daysLeft: null
+                };
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const expDate = new Date(item.expiry + 'T00:00:00');
+            const diffTime = expDate.getTime() - today.getTime();
+            const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (daysLeft < 0) {
+                return {
+                    code: 'EXPIRED',
+                    label: `Tamat Tempoh (${Math.abs(daysLeft)} hari lepas)`,
+                    badgeClass: 'bg-red-600 text-white font-bold shadow-sm',
+                    rowClass: 'bg-red-50/80 dark:bg-red-950/30',
+                    daysLeft: daysLeft
+                };
+            } else if (daysLeft <= 31) {
+                return {
+                    code: 'REMINDER',
+                    label: `Reminder <= 1 Bln (${daysLeft} hari lagi)`,
+                    badgeClass: 'bg-amber-400 text-slate-950 font-extrabold shadow-sm',
+                    rowClass: 'bg-amber-50/80 dark:bg-amber-950/25',
+                    daysLeft: daysLeft
+                };
+            } else {
+                return {
+                    code: 'ACTIVE',
+                    label: `Aktif (${daysLeft} hari lagi)`,
+                    badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold',
+                    rowClass: '',
+                    daysLeft: daysLeft
+                };
+            }
         }
 
-        function getFullStatePayload() {
-            return {
-                records: extinguishers,
-                selectedIds: Array.from(selectedForRFQ),
-                manualOffsets: manualOffsets,
-                monthlyCertifications: monthlyCertifications,
-                contractor: {
-                    name: document.getElementById('contractor-name').value || '',
-                    phone: document.getElementById('contractor-phone').value || '',
-                    pickupDate: document.getElementById('service-pickup-date').value || '',
-                    includeStandby: document.getElementById('include-standby-toggle').checked,
-                    includeLocations: document.getElementById('include-locations-toggle').checked
-                },
-                updatedAtClient: new Date().toISOString()
-            };
-        }
-
-        function saveStateLocalOnly() {
-            localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(extinguishers));
-            localStorage.setItem(STORAGE_KEY_MONTHLY_PROOFS, JSON.stringify(monthlyCertifications));
-            localStorage.setItem(STORAGE_KEY_RFQ_STATE, JSON.stringify({
-                selectedIds: Array.from(selectedForRFQ),
-                manualOffsets: manualOffsets
-            }));
-            localStorage.setItem(STORAGE_KEY_CONTRACTOR, JSON.stringify({
-                name: document.getElementById('contractor-name').value || '',
-                phone: document.getElementById('contractor-phone').value || '',
-                pickupDate: document.getElementById('service-pickup-date').value || '',
-                includeStandby: document.getElementById('include-standby-toggle').checked,
-                includeLocations: document.getElementById('include-locations-toggle').checked
-            }));
-        }
-
+        /**
+         * 5. LOCALSTORAGE & CLOUD FIRESTORE SYNC ENGINE
+         */
         function loadLocalState() {
-            const saved = localStorage.getItem(STORAGE_KEY_DATA);
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    extinguishers = parsed.map(normalizeItemRecord);
-                } catch (e) {
+            try {
+                const rawItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+                if (rawItems) {
+                    const parsed = JSON.parse(rawItems);
+                    extinguishers = Array.isArray(parsed) ? parsed.map(normalizeItemRecord) : JSON.parse(JSON.stringify(INITIAL_SCK_DATA));
+                } else {
                     extinguishers = JSON.parse(JSON.stringify(INITIAL_SCK_DATA));
                 }
-            } else {
-                extinguishers = JSON.parse(JSON.stringify(INITIAL_SCK_DATA));
-            }
 
-            // Load Monthly Certifications
-            const savedProofs = localStorage.getItem(STORAGE_KEY_MONTHLY_PROOFS);
-            if (savedProofs) {
-                try {
-                    monthlyCertifications = JSON.parse(savedProofs) || {};
-                } catch (e) {
-                    monthlyCertifications = {};
+                const rawMonthly = localStorage.getItem(STORAGE_KEY_MONTHLY);
+                if (rawMonthly) {
+                    monthlyCertifications = JSON.parse(rawMonthly) || {};
                 }
-            }
 
-            // Load Contractor & Settings
-            const savedContractor = localStorage.getItem(STORAGE_KEY_CONTRACTOR);
-            if (savedContractor) {
-                try {
-                    const info = JSON.parse(savedContractor);
-                    document.getElementById('contractor-name').value = info.name || '';
-                    document.getElementById('contractor-phone').value = info.phone || '';
-                    document.getElementById('service-pickup-date').value = info.pickupDate || '';
-                    if (typeof info.includeStandby === 'boolean') {
-                        document.getElementById('include-standby-toggle').checked = info.includeStandby;
+                const rawRfq = localStorage.getItem(STORAGE_KEY_RFQ);
+                if (rawRfq) {
+                    const rfqState = JSON.parse(rawRfq);
+                    if (Array.isArray(rfqState.selectedIds)) {
+                        selectedForRFQ = new Set(rfqState.selectedIds);
+                    } else {
+                        autoSelectDueAndRefillUnits(false);
                     }
-                    if (typeof info.includeLocations === 'boolean') {
-                        document.getElementById('include-locations-toggle').checked = info.includeLocations;
+                    if (rfqState.manualOffsets) {
+                        manualOffsets = { ...manualOffsets, ...rfqState.manualOffsets };
                     }
-                } catch (e) {}
-            }
-
-            // Load RFQ Selection & Offsets
-            const savedRfq = localStorage.getItem(STORAGE_KEY_RFQ_STATE);
-            if (savedRfq) {
-                try {
-                    const rfqObj = JSON.parse(savedRfq);
-                    if (Array.isArray(rfqObj.selectedIds)) {
-                        selectedForRFQ = new Set(rfqObj.selectedIds);
-                    }
-                    if (rfqObj.manualOffsets) {
-                        manualOffsets = { ...manualOffsets, ...rfqObj.manualOffsets };
-                    }
-                } catch (e) {
+                    if (rfqState.contractorName) document.getElementById('contractor-name').value = rfqState.contractorName;
+                    if (rfqState.contractorPhone) document.getElementById('contractor-phone').value = rfqState.contractorPhone;
+                    if (rfqState.pickupDate) document.getElementById('service-pickup-date').value = rfqState.pickupDate;
+                    if (typeof rfqState.includeStandby === 'boolean') document.getElementById('include-standby-toggle').checked = rfqState.includeStandby;
+                    if (typeof rfqState.includeLocations === 'boolean') document.getElementById('include-locations-toggle').checked = rfqState.includeLocations;
+                } else {
                     autoSelectDueAndRefillUnits(false);
                 }
-            } else {
+            } catch (err) {
+                console.warn('LocalStorage load fallback:', err);
+                extinguishers = JSON.parse(JSON.stringify(INITIAL_SCK_DATA));
                 autoSelectDueAndRefillUnits(false);
             }
-
-            saveStateLocalOnly();
         }
 
-        async function persistData(immediateCloud = false) {
-            saveStateLocalOnly();
+        function saveLocalStateOnly() {
+            try {
+                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(extinguishers));
+                localStorage.setItem(STORAGE_KEY_MONTHLY, JSON.stringify(monthlyCertifications));
+                const rfqPayload = {
+                    selectedIds: Array.from(selectedForRFQ),
+                    manualOffsets: manualOffsets,
+                    contractorName: document.getElementById('contractor-name')?.value || '',
+                    contractorPhone: document.getElementById('contractor-phone')?.value || '',
+                    pickupDate: document.getElementById('service-pickup-date')?.value || '',
+                    includeStandby: document.getElementById('include-standby-toggle')?.checked ?? true,
+                    includeLocations: document.getElementById('include-locations-toggle')?.checked ?? false
+                };
+                localStorage.setItem(STORAGE_KEY_RFQ, JSON.stringify(rfqPayload));
+            } catch (e) {
+                console.error('Failed saving local state:', e);
+            }
+        }
 
-            if (!currentUser || !firebaseDb || isApplyingRemoteSnapshot) {
-                return;
+        function buildMasterSyncPayload() {
+            return {
+                extinguishers: extinguishers,
+                monthlyCertifications: monthlyCertifications,
+                selectedIds: Array.from(selectedForRFQ),
+                manualOffsets: manualOffsets,
+                contractorName: document.getElementById('contractor-name')?.value || '',
+                contractorPhone: document.getElementById('contractor-phone')?.value || '',
+                pickupDate: document.getElementById('service-pickup-date')?.value || '',
+                includeStandby: document.getElementById('include-standby-toggle')?.checked ?? true,
+                includeLocations: document.getElementById('include-locations-toggle')?.checked ?? false,
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        async function persistData(immediate = false) {
+            saveLocalStateOnly();
+            if (!currentUser || !firebaseDb || isApplyingRemoteSnapshot) return;
+
+            if (cloudSyncDebounceTimer) {
+                clearTimeout(cloudSyncDebounceTimer);
             }
 
-            const pushToFirestore = async () => {
+            const executeUpload = async () => {
                 try {
-                    const docRef = getMasterDocRef(currentUser.uid);
-                    const payload = getFullStatePayload();
-                    payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-                    await docRef.set(payload, { merge: true });
-                    updateLastSyncTimestamp();
+                    const docRef = firebaseDb.collection('users').doc(currentUser.uid).collection('sck_fire_extinguishers').doc('master_data');
+                    await docRef.set(buildMasterSyncPayload(), { merge: true });
+                    const timeEl = document.getElementById('modal-last-sync-time');
+                    if (timeEl) {
+                        timeEl.textContent = 'Disegerak: ' + new Date().toLocaleTimeString('ms-MY');
+                    }
                 } catch (err) {
                     console.error('Firestore write error:', err);
-                    showToast('Disimpan di peranti. Gagal segerak ke awan: ' + err.message, 'warning');
                 }
             };
 
-            if (immediateCloud) {
-                clearTimeout(cloudSyncDebounceTimer);
-                await pushToFirestore();
+            if (immediate) {
+                await executeUpload();
             } else {
-                clearTimeout(cloudSyncDebounceTimer);
-                cloudSyncDebounceTimer = setTimeout(pushToFirestore, 450);
+                cloudSyncDebounceTimer = setTimeout(executeUpload, 600);
             }
         }
 
         async function manualCloudUploadSync() {
             if (!currentUser || !firebaseDb) {
                 openAuthModal();
-                showToast('Sila log masuk dengan Google dahulu untuk menggunakan Cloud Sync.', 'warning');
                 return;
             }
-
             const headerIcon = document.getElementById('header-sync-icon');
             const modalIcon = document.getElementById('modal-sync-icon');
             if (headerIcon) headerIcon.classList.add('fa-spin');
@@ -1662,7 +1649,9 @@
 
             try {
                 await persistData(true);
-                showToast('Berjaya! Semua data (50 unit, quotation & kontraktor) telah dimuat naik ke Cloud Firestore (pemadam-api-sck).', 'success');
+                showToast('Data berjaya dimuat naik dan disegerakkan ke Cloud Firestore!', 'success');
+            } catch (e) {
+                showToast('Gagal menyegerakkan ke awan: ' + e.message, 'error');
             } finally {
                 if (headerIcon) headerIcon.classList.remove('fa-spin');
                 if (modalIcon) modalIcon.classList.remove('fa-spin');
@@ -1670,35 +1659,28 @@
         }
 
         function attachFirestoreRealtimeListener(user) {
+            if (!firebaseDb || !user) return;
             if (firestoreUnsubscribe) {
                 firestoreUnsubscribe();
-                firestoreUnsubscribe = null;
             }
 
-            const docRef = getMasterDocRef(user.uid);
-            if (!docRef) return;
-
-            let isFirstSnapshot = true;
-
+            const docRef = firebaseDb.collection('users').doc(user.uid).collection('sck_fire_extinguishers').doc('master_data');
             firestoreUnsubscribe = docRef.onSnapshot(async (docSnap) => {
                 if (!docSnap.exists) {
-                    // First-time cloud login with empty cloud document: auto-upload current local data
-                    if (isFirstSnapshot) {
-                        isFirstSnapshot = false;
-                        await persistData(true);
-                        showToast('Akaun awan baharu dikesan. Data lokal semasa telah dimuat naik secara automatik ke Cloud Firestore!', 'success');
-                    }
+                    await persistData(true);
                     return;
                 }
 
-                isFirstSnapshot = false;
                 const data = docSnap.data();
                 if (!data) return;
 
                 isApplyingRemoteSnapshot = true;
                 try {
-                    if (Array.isArray(data.records) && data.records.length > 0) {
-                        extinguishers = data.records.map(normalizeItemRecord);
+                    if (Array.isArray(data.extinguishers) && data.extinguishers.length > 0) {
+                        extinguishers = data.extinguishers.map(normalizeItemRecord);
+                    }
+                    if (data.monthlyCertifications && typeof data.monthlyCertifications === 'object') {
+                        monthlyCertifications = data.monthlyCertifications;
                     }
                     if (Array.isArray(data.selectedIds)) {
                         selectedForRFQ = new Set(data.selectedIds);
@@ -1706,39 +1688,27 @@
                     if (data.manualOffsets) {
                         manualOffsets = { ...manualOffsets, ...data.manualOffsets };
                     }
-                    if (data.monthlyCertifications) {
-                        monthlyCertifications = { ...data.monthlyCertifications };
-                    }
-                    if (data.contractor) {
-                        const c = data.contractor;
-                        if (typeof c.name === 'string') document.getElementById('contractor-name').value = c.name;
-                        if (typeof c.phone === 'string') document.getElementById('contractor-phone').value = c.phone;
-                        if (typeof c.pickupDate === 'string') document.getElementById('service-pickup-date').value = c.pickupDate;
-                        if (typeof c.includeStandby === 'boolean') document.getElementById('include-standby-toggle').checked = c.includeStandby;
-                        if (typeof c.includeLocations === 'boolean') document.getElementById('include-locations-toggle').checked = c.includeLocations;
-                    }
+                    if (typeof data.contractorName === 'string') document.getElementById('contractor-name').value = data.contractorName;
+                    if (typeof data.contractorPhone === 'string') document.getElementById('contractor-phone').value = data.contractorPhone;
+                    if (typeof data.pickupDate === 'string') document.getElementById('service-pickup-date').value = data.pickupDate;
+                    if (typeof data.includeStandby === 'boolean') document.getElementById('include-standby-toggle').checked = data.includeStandby;
+                    if (typeof data.includeLocations === 'boolean') document.getElementById('include-locations-toggle').checked = data.includeLocations;
 
-                    saveStateLocalOnly();
+                    saveLocalStateOnly();
                     refreshAllViews();
-                    updateLastSyncTimestamp();
+
+                    const timeEl = document.getElementById('modal-last-sync-time');
+                    if (timeEl) {
+                        timeEl.textContent = 'Disegerak: ' + new Date().toLocaleTimeString('ms-MY');
+                    }
                 } finally {
                     isApplyingRemoteSnapshot = false;
                 }
             }, (err) => {
                 console.error('Firestore onSnapshot error:', err);
-                showToast('Ralat sambungan masa nyata Firestore: ' + err.message, 'error');
             });
         }
 
-        function updateLastSyncTimestamp() {
-            const nowStr = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const el = document.getElementById('modal-last-sync-time');
-            if (el) el.textContent = `Segerak terakhir: ${nowStr}`;
-        }
-
-        /**
-         * 6. RENDERING DASHBOARD, TABLE & RFQ GENERATOR
-         */
         function refreshAllViews() {
             updateDashboardStats();
             renderTable();
@@ -1746,83 +1716,77 @@
             renderMonthlyProofView();
         }
 
+        /**
+         * 6. DASHBOARD STATS, FILTERS & TABLE RENDERER
+         */
         function updateDashboardStats() {
             let total = extinguishers.length;
+            let factoryCount = 0;
+            let hostelCount = 0;
             let serviceOnlyCount = 0;
             let refillOnlyCount = 0;
             let bothCount = 0;
-            let checkCount = 0;
-            let factoryCount = 0;
-            let hostelCount = 0;
             let locTempCount = 0;
             let locEmptyCount = 0;
+            let physicalCheckedCount = 0;
 
             extinguishers.forEach(item => {
                 if (item.section === 'HOSTEL') hostelCount++;
                 else factoryCount++;
 
+                if (item.monthlyChecked) physicalCheckedCount++;
+
                 const st = getStatusInfo(item);
                 const mode = item.workMode || 'AUTO';
-                const locStatus = item.locationStatus || 'NORMAL';
+                const loc = item.locationStatus || 'NORMAL';
 
-                if (locStatus === 'TEMP') locTempCount++;
-                if (locStatus === 'EMPTY') locEmptyCount++;
-
-                if (mode === 'REFILL_AND_SERVICE') {
-                    bothCount++;
+                if (mode === 'SERVICE_ONLY' || (mode === 'AUTO' && (st.code === 'EXPIRED' || st.code === 'REMINDER'))) {
+                    serviceOnlyCount++;
                 } else if (mode === 'REFILL_ONLY') {
                     refillOnlyCount++;
-                } else if (mode === 'SERVICE_ONLY') {
-                    serviceOnlyCount++;
-                } else {
-                    if (st.code === 'EXPIRED' || st.code === 'REMINDER') {
-                        serviceOnlyCount++;
-                    } else if (st.code !== 'ACTIVE') {
-                        checkCount++;
-                    }
+                } else if (mode === 'REFILL_AND_SERVICE') {
+                    bothCount++;
                 }
+
+                if (loc === 'TEMP') locTempCount++;
+                if (loc === 'EMPTY') locEmptyCount++;
             });
 
             const rfqCounts = getCalculatedRFQCounts(true);
 
+            // Update Physical Round Progress Bar
+            const pct = total > 0 ? Math.round((physicalCheckedCount / total) * 100) : 0;
+            const uncheckedCount = Math.max(0, total - physicalCheckedCount);
+            const progressBarEl = document.getElementById('round-progress-bar');
+            const progressTextEl = document.getElementById('round-progress-text');
+            const uncheckedEl = document.getElementById('round-unchecked-count');
+
+            if (progressBarEl) progressBarEl.style.width = `${pct}%`;
+            if (progressTextEl) progressTextEl.textContent = `${physicalCheckedCount} / ${total} Unit Selesai (${pct}%)`;
+            if (uncheckedEl) uncheckedEl.textContent = uncheckedCount;
+
             document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-total-sub').textContent = `${factoryCount} Kilang & ${hostelCount} Hostel`;
             document.getElementById('tab-total-unit-count').textContent = total;
-            document.getElementById('stat-total-sub').textContent = `${factoryCount} Kilang & ${hostelCount} Hostel (${checkCount} Semakan)`;
+
             document.getElementById('stat-due-service').textContent = serviceOnlyCount;
             document.getElementById('stat-refill-only').textContent = refillOnlyCount;
             document.getElementById('stat-refill-service').textContent = bothCount;
             document.getElementById('stat-standby').textContent = rfqCounts.standbyTotal;
             document.getElementById('stat-standby-sub').textContent = `${rfqCounts.standby9}x 9KG, ${rfqCounts.standby2}x 2KG`;
+
             document.getElementById('stat-loc-temp').textContent = locTempCount;
             document.getElementById('stat-loc-empty').textContent = locEmptyCount;
-            document.getElementById('stat-loc-sub').textContent = `${locTempCount} Temporary, ${locEmptyCount} Kosong`;
 
-            document.getElementById('banner-alert-text').innerHTML = 
-                `Keluar: <strong class="text-red-600 dark:text-red-400">${rfqCounts.service9 + rfqCounts.service2} Servis</strong> &bull; ` +
-                `<strong class="text-orange-600 dark:text-orange-400">${rfqCounts.refill9 + rfqCounts.refill2} Refill</strong> &bull; ` +
-                `<strong class="text-purple-600 dark:text-purple-400">${rfqCounts.both9 + rfqCounts.both2} 2-in-1</strong> &rarr; ` +
-                `Lokasi Semasa: <strong class="text-blue-600 dark:text-blue-400">${locTempCount} Ganti Temporary</strong>, ` +
-                `<strong class="text-rose-600 dark:text-rose-400">${locEmptyCount} Kosong (Tiada FE)</strong>.`;
+            const bannerEl = document.getElementById('banner-alert-text');
+            if (bannerEl) {
+                bannerEl.innerHTML = `<strong>${rfqCounts.grandTotal} unit</strong> dijadualkan keluar (Servis: ${rfqCounts.service9 + rfqCounts.service2}, Refill: ${rfqCounts.refill9 + rfqCounts.refill2}, 2-in-1: ${rfqCounts.both9 + rfqCounts.both2}) &bull; Cadangan Standby FE (50%): <strong>${rfqCounts.standbyTotal} unit</strong>${locEmptyCount > 0 ? ` &bull; <span class="text-rose-600 dark:text-rose-400 font-extrabold">AMARAN: ${locEmptyCount} lokasi kosong!</span>` : ''}`;
+            }
         }
 
         function filterByCard(statusCode) {
             switchTab('monitor');
-            currentCardFilter = statusCode;
             document.getElementById('filter-status').value = statusCode;
-
-            document.querySelectorAll('.stat-card').forEach(card => {
-                card.classList.remove('border-slate-900', 'dark:border-slate-400', 'ring-2', 'ring-red-500/30');
-                if (card.id !== 'card-STANDBY') {
-                    card.classList.add('border-transparent');
-                }
-            });
-
-            const activeCard = document.getElementById(`card-${statusCode}`);
-            if (activeCard && statusCode !== 'STANDBY') {
-                activeCard.classList.remove('border-transparent');
-                activeCard.classList.add('border-slate-900', 'dark:border-slate-400', 'ring-2', 'ring-red-500/30');
-            }
-
             syncQuickPills(statusCode);
             renderTable();
         }
@@ -1834,147 +1798,87 @@
         }
 
         function syncQuickPills(activeCode) {
-            document.querySelectorAll('.filter-pill').forEach(pill => {
-                const isMatch = pill.id === `pill-${activeCode}`;
-                if (isMatch) {
-                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition shrink-0';
-                } else if (pill.id === 'pill-DUE_ALL') {
-                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/60 hover:bg-red-50 dark:hover:bg-red-950/40 transition shrink-0';
-                } else if (pill.id === 'pill-REFILL_ONLY') {
-                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/60 hover:bg-orange-50 dark:hover:bg-orange-950/40 transition shrink-0';
-                } else if (pill.id === 'pill-REFILL_AND_SERVICE') {
-                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition shrink-0';
-                } else if (pill.id === 'pill-LOC_TEMP') {
-                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition shrink-0';
-                } else if (pill.id === 'pill-LOC_EMPTY') {
-                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0';
-                } else {
-                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 transition shrink-0';
-                }
+            document.querySelectorAll('.filter-pill').forEach(btn => {
+                btn.classList.remove('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
+                btn.classList.add('bg-white', 'dark:bg-slate-900');
             });
+            const activeBtn = document.getElementById(`pill-${activeCode}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'dark:bg-slate-900');
+                activeBtn.classList.add('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
+            }
         }
 
-        async function toggleItemWorkMode(id, targetMode) {
+        async function togglePhysicalCheck(id) {
             const item = extinguishers.find(x => x.id === id);
             if (!item) return;
 
-            const currentMode = item.workMode || 'AUTO';
-            if (currentMode === targetMode) {
-                item.workMode = 'AUTO';
-                const st = getStatusInfo(item);
-                if (st.code !== 'EXPIRED' && st.code !== 'REMINDER') {
-                    selectedForRFQ.delete(item.id);
-                }
-                showToast(`Pilihan kerja khas bagi No. ${item.no} (${item.kawasan}) telah dibatalkan.`, 'info');
+            item.monthlyChecked = !item.monthlyChecked;
+            if (item.monthlyChecked) {
+                const now = new Date();
+                item.monthlyCheckedAt = `${now.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit' })} ${now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })}`;
+                showToast(`No. ${item.no} (${item.kawasan}) ditanda Dah Check!`, 'success');
             } else {
-                item.workMode = targetMode;
-                selectedForRFQ.add(item.id);
-                if (targetMode === 'SERVICE_ONLY') {
-                    showToast(`No. ${item.no} (${item.kawasan}) ditanda untuk Servis Sahaja.`, 'info');
-                } else if (targetMode === 'REFILL_ONLY') {
-                    showToast(`No. ${item.no} (${item.kawasan}) ditanda Sudah Digunakan (Refill Sahaja).`, 'warning');
-                } else if (targetMode === 'REFILL_AND_SERVICE') {
-                    showToast(`No. ${item.no} (${item.kawasan}) ditanda Refill & Servis (2-in-1).`, 'success');
-                }
+                item.monthlyCheckedAt = '';
             }
 
             refreshAllViews();
             await persistData(false);
         }
 
-        async function toggleLocationStatus(id, targetLocStatus) {
-            const item = extinguishers.find(x => x.id === id);
-            if (!item) return;
-
-            const currentLoc = item.locationStatus || 'NORMAL';
-            if (currentLoc === targetLocStatus) {
-                item.locationStatus = 'NORMAL';
-                showToast(`Status lokasi No. ${item.no} (${item.kawasan}) dipulihkan ke Normal.`, 'info');
-            } else {
-                item.locationStatus = targetLocStatus;
-                if (targetLocStatus === 'TEMP') {
-                    showToast(`No. ${item.no} (${item.kawasan} Pt.${item.point}) ditanda "Diganti Temporary FE".`, 'info');
-                } else if (targetLocStatus === 'EMPTY') {
-                    showToast(`AMARAN: Lokasi No. ${item.no} (${item.kawasan} Pt.${item.point}) ditanda "KOSONG (Tiada FE)".`, 'warning');
+        function confirmResetMonthlyCheck() {
+            openConfirmDialog(
+                'Mulakan Rondaan Bulan Baharu?',
+                'Semua tanda "[✓] Dah Check" pada setiap tiang/dinding akan dikosongkan supaya anda boleh memulakan semakan fizikal untuk bulan baharu. Teruskan?',
+                async () => {
+                    extinguishers.forEach(item => {
+                        item.monthlyChecked = false;
+                        item.monthlyCheckedAt = '';
+                    });
+                    refreshAllViews();
+                    await persistData(true);
+                    showToast('Semua tanda check telah di-reset untuk rondaan bulan baharu!', 'success');
                 }
-            }
-
-            refreshAllViews();
-            await persistData(false);
+            );
         }
 
-        function markServiceCompleted(id) {
-            const item = extinguishers.find(x => x.id === id);
-            if (!item) return;
-
-            const modal = document.getElementById('complete-service-modal');
-            const titleEl = document.getElementById('complete-modal-title');
-            const descEl = document.getElementById('complete-modal-desc');
-            const dateInput = document.getElementById('complete-new-expiry');
-            const confirmBtn = document.getElementById('complete-confirm-btn');
-
-            titleEl.textContent = `Sahkan Siap Servis - No. ${item.no} (${item.kawasan})`;
-            descEl.textContent = `Tong asal akan dipulangkan ke lokasi (${item.tempat} Pt.${item.point}), status Temporary/Kosong dipadam, dan pilihan Servis/Refill/2in1 dibersihkan.`;
-            dateInput.value = '';
-
-            confirmBtn.onclick = async () => {
-                const enteredExpiry = dateInput.value;
-                item.locationStatus = 'NORMAL';
-                item.workMode = 'AUTO';
-                if (enteredExpiry) {
-                    item.expiry = enteredExpiry;
-                }
-                selectedForRFQ.delete(item.id);
-                closeCompleteServiceModal();
-                refreshAllViews();
-                await persistData(true);
-
-                const expiryMsg = enteredExpiry
-                    ? `Tarikh tamat tempoh dikemaskini ke ${formatDisplayDate(enteredExpiry)}.`
-                    : `Tarikh tamat tempoh tidak diubah secara automatik (sila kemaskini bila tong sampai).`;
-                showToast(`Selesai! No. ${item.no} (${item.kawasan}) telah dipulangkan. ${expiryMsg}`, 'success');
-            };
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeCompleteServiceModal() {
-            const modal = document.getElementById('complete-service-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
+        /**
+         * 7. TABLE RENDERING, WORK MODE TOGGLES, LOCATION STATUS & CRUD MODAL
+         */
         function renderTable() {
-            const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
-            const areaFilter = document.getElementById('filter-area').value;
-            const weightFilter = document.getElementById('filter-weight').value;
-            const statusFilter = document.getElementById('filter-status').value;
-
             const tbody = document.getElementById('extinguisher-table-body');
             const emptyState = document.getElementById('empty-state');
-            tbody.innerHTML = '';
+            if (!tbody) return;
+
+            const searchTerm = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+            const areaFilter = document.getElementById('filter-area')?.value || 'ALL';
+            const weightFilter = document.getElementById('filter-weight')?.value || 'ALL';
+            const statusFilter = document.getElementById('filter-status')?.value || 'ALL';
 
             const filtered = extinguishers.filter(item => {
+                if (searchTerm) {
+                    const hay = `${item.no} ${item.kawasan} ${item.tempat} ${item.point} ${item.berat} ${item.notes || ''}`.toLowerCase();
+                    if (!hay.includes(searchTerm)) return false;
+                }
+
+                if (areaFilter !== 'ALL' && item.kawasan !== areaFilter) return false;
+
+                if (weightFilter === 'TIADA') {
+                    if (item.berat) return false;
+                } else if (weightFilter !== 'ALL' && item.berat !== weightFilter) {
+                    return false;
+                }
+
                 const st = getStatusInfo(item);
                 const mode = item.workMode || 'AUTO';
                 const locStatus = item.locationStatus || 'NORMAL';
 
-                const matchSearch = !searchQuery || 
-                    item.no.toLowerCase().includes(searchQuery) ||
-                    item.kawasan.toLowerCase().includes(searchQuery) ||
-                    item.tempat.toLowerCase().includes(searchQuery) ||
-                    item.point.toLowerCase().includes(searchQuery) ||
-                    (item.notes && item.notes.toLowerCase().includes(searchQuery));
-
-                const matchArea = areaFilter === 'ALL' || item.kawasan === areaFilter;
-
-                const matchWeight = weightFilter === 'ALL' || 
-                    (weightFilter === 'TIADA' && !item.berat) ||
-                    item.berat === weightFilter;
-
                 let matchStatus = true;
-                if (statusFilter === 'LOC_ALERT') {
+                if (statusFilter === 'UNCHECKED') {
+                    matchStatus = !item.monthlyChecked;
+                } else if (statusFilter === 'CHECKED') {
+                    matchStatus = Boolean(item.monthlyChecked);
+                } else if (statusFilter === 'LOC_ALERT') {
                     matchStatus = (locStatus === 'TEMP' || locStatus === 'EMPTY');
                 } else if (statusFilter === 'LOC_TEMP') {
                     matchStatus = (locStatus === 'TEMP');
@@ -1988,13 +1892,20 @@
                     matchStatus = (mode === 'REFILL_AND_SERVICE');
                 } else if (statusFilter === 'ALL_USED') {
                     matchStatus = (mode === 'REFILL_ONLY' || mode === 'REFILL_AND_SERVICE');
-                } else if (statusFilter !== 'ALL') {
-                    matchStatus = (st.code === statusFilter);
+                } else if (statusFilter === 'EXPIRED') {
+                    matchStatus = (st.code === 'EXPIRED');
+                } else if (statusFilter === 'REMINDER') {
+                    matchStatus = (st.code === 'REMINDER');
+                } else if (statusFilter === 'CHECK') {
+                    matchStatus = (st.code === 'CHECK');
+                } else if (statusFilter === 'ACTIVE') {
+                    matchStatus = (st.code === 'ACTIVE' && mode === 'AUTO' && locStatus === 'NORMAL');
                 }
 
-                return matchSearch && matchArea && matchWeight && matchStatus;
+                return matchStatus;
             });
 
+            tbody.innerHTML = '';
             if (filtered.length === 0) {
                 emptyState.classList.remove('hidden');
                 return;
@@ -2003,55 +1914,61 @@
 
             filtered.forEach(item => {
                 const st = getStatusInfo(item);
-                const isChecked = selectedForRFQ.has(item.id);
                 const mode = item.workMode || 'AUTO';
                 const locStatus = item.locationStatus || 'NORMAL';
+                const isChecked = selectedForRFQ.has(item.id);
+                const isServiceManual = mode === 'SERVICE_ONLY';
+                const isRefillOnly = mode === 'REFILL_ONLY';
+                const isBoth = mode === 'REFILL_AND_SERVICE';
+                const isTempChecked = locStatus === 'TEMP';
+                const isEmptyChecked = locStatus === 'EMPTY';
+                const isPhysicalChecked = Boolean(item.monthlyChecked);
 
-                let weightBadge = `<span class="text-xs text-slate-400 italic">Tiada</span>`;
+                let weightBadge = `<span class="px-2 py-0.5 rounded-md text-xs font-bold bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300">-</span>`;
                 if (item.berat === '9 KG') {
-                    weightBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-slate-800 text-white dark:bg-slate-700">9 KG</span>`;
+                    weightBadge = `<span class="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">9 KG</span>`;
                 } else if (item.berat === '2 KG') {
-                    weightBadge = `<span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-amber-600 text-white">2 KG</span>`;
+                    weightBadge = `<span class="px-2.5 py-0.5 rounded-md text-xs font-extrabold bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300">2 KG</span>`;
                 }
 
-                const isServiceChecked = mode === 'SERVICE_ONLY';
-                const isRefillChecked = mode === 'REFILL_ONLY';
-                const isBothChecked = mode === 'REFILL_AND_SERVICE';
+                const physicalCheckControl = `
+                    <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer border transition select-none ${isPhysicalChecked ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-emerald-500'}" title="Klik apabila anda sudah memeriksa tong ini di lokasi">
+                        <input type="checkbox" ${isPhysicalChecked ? 'checked' : ''} onchange="togglePhysicalCheck('${item.id}')" class="w-4 h-4 rounded text-emerald-600 focus:ring-0">
+                        <span>${isPhysicalChecked ? 'Dah Check' : 'Check'}</span>
+                    </label>
+                    ${isPhysicalChecked && item.monthlyCheckedAt ? `<div class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 mt-1">${item.monthlyCheckedAt}</div>` : ''}
+                `;
 
-                const workTickControls = `
-                    <div class="flex flex-wrap items-center gap-1">
-                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isServiceChecked ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'}">
-                            <input type="checkbox" ${isServiceChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'SERVICE_ONLY')" class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0">
+                const workModeControls = `
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer border transition ${isServiceManual ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'}">
+                            <input type="checkbox" ${isServiceManual ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'SERVICE_ONLY')" class="w-3.5 h-3.5 rounded text-blue-600">
                             <span>Servis</span>
                         </label>
-                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isRefillChecked ? 'bg-orange-600 text-white border-orange-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-orange-400'}">
-                            <input type="checkbox" ${isRefillChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_ONLY')" class="w-3.5 h-3.5 rounded text-orange-600 focus:ring-0">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer border transition ${isRefillOnly ? 'bg-orange-600 text-white border-orange-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-orange-400'}">
+                            <input type="checkbox" ${isRefillOnly ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_ONLY')" class="w-3.5 h-3.5 rounded text-orange-600">
                             <span>Refill</span>
                         </label>
-                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isBothChecked ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-purple-400'}">
-                            <input type="checkbox" ${isBothChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_AND_SERVICE')" class="w-3.5 h-3.5 rounded text-purple-600 focus:ring-0">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer border transition ${isBoth ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-purple-400'}">
+                            <input type="checkbox" ${isBoth ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_AND_SERVICE')" class="w-3.5 h-3.5 rounded text-purple-600">
                             <span>2in1</span>
                         </label>
                     </div>
                 `;
 
-                const isTempChecked = locStatus === 'TEMP';
-                const isEmptyChecked = locStatus === 'EMPTY';
-
                 const locationStatusControls = `
                     <div class="flex flex-wrap items-center gap-1.5">
-                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isTempChecked ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-400'}" title="Tong asal sedang diservis & diganti dengan Temporary FE">
-                            <input type="checkbox" ${isTempChecked ? 'checked' : ''} onchange="toggleLocationStatus('${item.id}', 'TEMP')" class="w-3.5 h-3.5 rounded text-sky-600 focus:ring-0">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer border transition ${isTempChecked ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-400'}">
+                            <input type="checkbox" ${isTempChecked ? 'checked' : ''} onchange="toggleLocationStatus('${item.id}', 'TEMP')" class="w-3.5 h-3.5 rounded text-sky-600">
                             <span>Temporary</span>
                         </label>
-                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isEmptyChecked ? 'bg-rose-600 text-white border-rose-600 shadow-sm animate-pulse' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-rose-400'}" title="Lokasi ini kosong (tiada satu pun pemadam api buat sementara waktu)">
-                            <input type="checkbox" ${isEmptyChecked ? 'checked' : ''} onchange="toggleLocationStatus('${item.id}', 'EMPTY')" class="w-3.5 h-3.5 rounded text-rose-600 focus:ring-0">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold cursor-pointer border transition ${isEmptyChecked ? 'bg-rose-600 text-white border-rose-600 shadow-sm animate-pulse' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-rose-400'}">
+                            <input type="checkbox" ${isEmptyChecked ? 'checked' : ''} onchange="toggleLocationStatus('${item.id}', 'EMPTY')" class="w-3.5 h-3.5 rounded text-rose-600">
                             <span>Kosong</span>
                         </label>
                         ${(isTempChecked || isEmptyChecked || mode !== 'AUTO') ? `
-                            <button onclick="markServiceCompleted('${item.id}')" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition" title="Klik apabila tong telah siap diservis & dipulangkan ke lokasi">
-                                <i class="fa-solid fa-check"></i>
-                                <span>Siap</span>
+                            <button type="button" onclick="openCompleteServiceModal('${item.id}')" class="px-2 py-1 rounded-lg text-[11px] font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition" title="Sahkan tong asal sudah pulang & siap servis">
+                                <i class="fa-solid fa-check"></i> Siap
                             </button>
                         ` : ''}
                     </div>
@@ -2060,100 +1977,163 @@
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-slate-50 dark:hover:bg-slate-800/50 transition ${st.rowClass}`;
                 tr.innerHTML = `
+                    <td class="py-3 px-3 whitespace-nowrap bg-emerald-50/30 dark:bg-emerald-950/10">
+                        ${physicalCheckControl}
+                    </td>
                     <td class="py-3 px-3">
                         <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRFQSelection('${item.id}')" class="w-5 h-5 rounded-md text-red-600 focus:ring-red-500 border-slate-300 dark:border-slate-600 cursor-pointer">
                     </td>
                     <td class="py-3 px-3 font-extrabold text-slate-900 dark:text-white whitespace-nowrap">${item.no}</td>
-                    <td class="py-3 px-3">
-                        <div class="font-bold text-slate-900 dark:text-white">${item.kawasan}</div>
-                        <div class="text-[11px] text-slate-500 dark:text-slate-400">${item.section}</div>
-                    </td>
+                    <td class="py-3 px-3 font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">${item.kawasan}</td>
                     <td class="py-3 px-3 whitespace-nowrap">
-                        <span class="font-medium text-slate-700 dark:text-slate-300">${item.tempat}</span>
-                        <span class="ml-1 px-2 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">Pt. ${item.point}</span>
+                        <span class="font-semibold text-slate-700 dark:text-slate-300">${item.tempat}</span>
+                        <span class="ml-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-xs font-bold">Pt. ${item.point}</span>
                     </td>
                     <td class="py-3 px-3 whitespace-nowrap">${weightBadge}</td>
-                    <td class="py-3 px-3 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        ${formatDisplayDate(item.expiry)}
-                    </td>
-                    <td class="py-3 px-3">
-                        <div class="flex flex-wrap items-center gap-1.5">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs ${st.badgeClass}">
-                                <i class="fa-solid ${st.icon}"></i>
-                                <span>${st.label}</span>
-                            </span>
-                        </div>
-                        ${item.notes ? `<div class="text-xs text-slate-500 dark:text-slate-400 mt-1">${item.notes}</div>` : ''}
-                    </td>
+                    <td class="py-3 px-3 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">${formatDisplayDate(item.expiry)}</td>
                     <td class="py-3 px-3 whitespace-nowrap">
-                        ${workTickControls}
+                        <span class="px-2.5 py-1 rounded-full text-[11px] inline-block ${st.badgeClass}">${st.label}</span>
                     </td>
-                    <td class="py-3 px-3 whitespace-nowrap">
-                        ${locationStatusControls}
-                    </td>
+                    <td class="py-3 px-3 whitespace-nowrap">${workModeControls}</td>
+                    <td class="py-3 px-3 whitespace-nowrap">${locationStatusControls}</td>
                     <td class="py-3 px-3 text-right whitespace-nowrap">
-                        <div class="inline-flex items-center gap-1.5">
-                            <button onclick="openItemModal('${item.id}')" class="p-2 rounded-lg bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 dark:hover:bg-blue-900/40 text-slate-600 hover:text-blue-600 dark:text-slate-300 transition" title="Edit Rekod">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button onclick="deleteItem('${item.id}')" class="p-2 rounded-lg bg-slate-100 hover:bg-red-100 dark:bg-slate-800 dark:hover:bg-red-900/40 text-slate-600 hover:text-red-600 dark:text-slate-300 transition" title="Padam Rekod">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
+                        <button onclick="openItemModal('${item.id}')" class="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition" title="Edit Rekod">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deleteItem('${item.id}')" class="p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 transition" title="Padam Rekod">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        /**
-         * 7. CRUD OPERATIONS (ADD, EDIT, DELETE, RESET)
-         */
-        function syncModalWorkCheckboxes(changedType) {
-            const serviceCb = document.getElementById('field-manual-service');
-            const usedCb = document.getElementById('field-is-used');
-            const bothCb = document.getElementById('field-also-service');
+        async function toggleItemWorkMode(id, targetMode) {
+            const item = extinguishers.find(x => x.id === id);
+            if (!item) return;
 
-            if (changedType === 'service' && serviceCb.checked) {
-                usedCb.checked = false;
-                bothCb.checked = false;
-            } else if (changedType === 'used' && usedCb.checked) {
-                serviceCb.checked = false;
-                bothCb.checked = false;
-            } else if (changedType === 'both' && bothCb.checked) {
-                serviceCb.checked = false;
-                usedCb.checked = false;
+            if (item.workMode === targetMode) {
+                item.workMode = 'AUTO';
+                const st = getStatusInfo(item);
+                if (st.code !== 'EXPIRED' && st.code !== 'REMINDER') {
+                    selectedForRFQ.delete(id);
+                }
+            } else {
+                item.workMode = targetMode;
+                selectedForRFQ.add(id);
+            }
+
+            refreshAllViews();
+            await persistData(false);
+        }
+
+        async function toggleLocationStatus(id, targetLocStatus) {
+            const item = extinguishers.find(x => x.id === id);
+            if (!item) return;
+
+            if (item.locationStatus === targetLocStatus) {
+                item.locationStatus = 'NORMAL';
+            } else {
+                item.locationStatus = targetLocStatus;
+            }
+
+            refreshAllViews();
+            await persistData(false);
+        }
+
+        let pendingCompleteItemId = null;
+
+        function openCompleteServiceModal(id) {
+            const item = extinguishers.find(x => x.id === id);
+            if (!item) return;
+
+            pendingCompleteItemId = id;
+            document.getElementById('complete-modal-title').textContent = `Sahkan Siap Servis - No. ${item.no} (${item.kawasan})`;
+            document.getElementById('complete-modal-desc').textContent = `Tong asal akan dipulangkan ke lokasi (${item.tempat} Pt.${item.point}), status Temporary/Kosong dipadam, dan pilihan Servis/Refill/2in1 dibersihkan.`;
+            document.getElementById('complete-new-expiry').value = '';
+
+            const confirmBtn = document.getElementById('complete-confirm-btn');
+            confirmBtn.onclick = confirmCompleteServiceAction;
+
+            const modal = document.getElementById('complete-service-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCompleteServiceModal() {
+            pendingCompleteItemId = null;
+            const modal = document.getElementById('complete-service-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function confirmCompleteServiceAction() {
+            if (!pendingCompleteItemId) return;
+            const item = extinguishers.find(x => x.id === pendingCompleteItemId);
+            if (!item) {
+                closeCompleteServiceModal();
+                return;
+            }
+
+            const manualNewDate = document.getElementById('complete-new-expiry').value;
+            item.locationStatus = 'NORMAL';
+            item.workMode = 'AUTO';
+            if (manualNewDate) {
+                item.expiry = manualNewDate;
+            }
+            selectedForRFQ.delete(item.id);
+
+            closeCompleteServiceModal();
+            refreshAllViews();
+            await persistData(true);
+            showToast(`No. ${item.no} (${item.kawasan}) telah disahkan siap servis dan dipulangkan ke lokasi!`, 'success');
+        }
+
+        function syncModalWorkCheckboxes(source) {
+            const cbService = document.getElementById('field-manual-service');
+            const cbUsed = document.getElementById('field-is-used');
+            const cbBoth = document.getElementById('field-also-service');
+
+            if (source === 'service' && cbService.checked) {
+                cbUsed.checked = false;
+                cbBoth.checked = false;
+            } else if (source === 'used' && cbUsed.checked) {
+                cbService.checked = false;
+                cbBoth.checked = false;
+            } else if (source === 'both' && cbBoth.checked) {
+                cbService.checked = false;
+                cbUsed.checked = false;
             }
         }
 
         function openItemModal(editId = null) {
             const modal = document.getElementById('item-modal');
-            const title = document.getElementById('item-modal-title');
-            const form = document.getElementById('item-form');
-            form.reset();
+            const titleEl = document.getElementById('item-modal-title');
+            document.getElementById('item-form').reset();
+            document.getElementById('edit-item-id').value = '';
 
             if (editId) {
                 const item = extinguishers.find(x => x.id === editId);
-                if (!item) return;
-                title.textContent = `Kemaskini Pemadam Api (No. ${item.no})`;
-                document.getElementById('edit-item-id').value = item.id;
-                document.getElementById('field-no').value = item.no;
-                document.getElementById('field-section').value = item.section || 'KILANG';
-                document.getElementById('field-kawasan').value = item.kawasan;
-                document.getElementById('field-tempat').value = item.tempat;
-                document.getElementById('field-point').value = item.point;
-                document.getElementById('field-berat').value = item.berat || '';
-                document.getElementById('field-expiry').value = item.expiry || '';
-                document.getElementById('field-manual-service').checked = (item.workMode === 'SERVICE_ONLY');
-                document.getElementById('field-is-used').checked = (item.workMode === 'REFILL_ONLY');
-                document.getElementById('field-also-service').checked = (item.workMode === 'REFILL_AND_SERVICE');
-                document.getElementById('field-location-status').value = item.locationStatus || 'NORMAL';
-                document.getElementById('field-notes').value = item.notes || '';
+                if (item) {
+                    titleEl.textContent = `Kemaskini Unit Pemadam Api (No. ${item.no})`;
+                    document.getElementById('edit-item-id').value = item.id;
+                    document.getElementById('field-no').value = item.no;
+                    document.getElementById('field-section').value = item.section || 'KILANG';
+                    document.getElementById('field-kawasan').value = item.kawasan;
+                    document.getElementById('field-tempat').value = item.tempat;
+                    document.getElementById('field-point').value = item.point;
+                    document.getElementById('field-berat').value = item.berat || '';
+                    document.getElementById('field-expiry').value = item.expiry || '';
+                    document.getElementById('field-manual-service').checked = item.workMode === 'SERVICE_ONLY';
+                    document.getElementById('field-is-used').checked = item.workMode === 'REFILL_ONLY';
+                    document.getElementById('field-also-service').checked = item.workMode === 'REFILL_AND_SERVICE';
+                    document.getElementById('field-location-status').value = item.locationStatus || 'NORMAL';
+                    document.getElementById('field-notes').value = item.notes || '';
+                }
             } else {
-                title.textContent = 'Tambah Unit Pemadam Api Baharu';
-                document.getElementById('edit-item-id').value = '';
+                titleEl.textContent = 'Tambah Unit Pemadam Api Baharu';
                 document.getElementById('field-no').value = String(extinguishers.length + 1);
-                document.getElementById('field-location-status').value = 'NORMAL';
             }
 
             modal.classList.remove('hidden');
@@ -2169,47 +2149,50 @@
         async function saveItemForm(e) {
             e.preventDefault();
             const editId = document.getElementById('edit-item-id').value;
-            const isService = document.getElementById('field-manual-service').checked;
-            const isUsed = document.getElementById('field-is-used').checked;
-            const isBoth = document.getElementById('field-also-service').checked;
-            const locationStatus = document.getElementById('field-location-status').value || 'NORMAL';
+            const no = document.getElementById('field-no').value.trim();
+            const section = document.getElementById('field-section').value;
+            const kawasan = document.getElementById('field-kawasan').value.trim().toUpperCase();
+            const tempat = document.getElementById('field-tempat').value.trim().toUpperCase();
+            const point = document.getElementById('field-point').value.trim();
+            const berat = document.getElementById('field-berat').value;
+            const expiry = document.getElementById('field-expiry').value;
+            const locationStatus = document.getElementById('field-location-status').value;
+            const notes = document.getElementById('field-notes').value.trim();
 
             let workMode = 'AUTO';
-            if (isBoth) workMode = 'REFILL_AND_SERVICE';
-            else if (isUsed) workMode = 'REFILL_ONLY';
-            else if (isService) workMode = 'SERVICE_ONLY';
-
-            const record = {
-                id: editId || ('custom-' + Date.now()),
-                no: document.getElementById('field-no').value.trim(),
-                section: document.getElementById('field-section').value,
-                kawasan: document.getElementById('field-kawasan').value.trim().toUpperCase(),
-                tempat: document.getElementById('field-tempat').value.trim().toUpperCase(),
-                point: document.getElementById('field-point').value.trim(),
-                berat: document.getElementById('field-berat').value,
-                expiry: document.getElementById('field-expiry').value,
-                workMode: workMode,
-                locationStatus: locationStatus,
-                notes: document.getElementById('field-notes').value.trim()
-            };
+            if (document.getElementById('field-manual-service').checked) workMode = 'SERVICE_ONLY';
+            else if (document.getElementById('field-is-used').checked) workMode = 'REFILL_ONLY';
+            else if (document.getElementById('field-also-service').checked) workMode = 'REFILL_AND_SERVICE';
 
             if (editId) {
                 const idx = extinguishers.findIndex(x => x.id === editId);
-                if (idx !== -1) extinguishers[idx] = record;
-                showToast(`Rekod No. ${record.no} berjaya dikemaskini!`, 'success');
+                if (idx !== -1) {
+                    extinguishers[idx] = {
+                        ...extinguishers[idx],
+                        no, section, kawasan, tempat, point, berat, expiry, workMode, locationStatus, notes
+                    };
+                    if (workMode !== 'AUTO') selectedForRFQ.add(editId);
+                    showToast(`Rekod No. ${no} (${kawasan}) berjaya dikemaskini!`, 'success');
+                }
             } else {
-                extinguishers.push(record);
-                showToast(`Unit baharu No. ${record.no} berjaya ditambah!`, 'success');
-            }
-
-            const st = getStatusInfo(record);
-            if (record.workMode !== 'AUTO' || st.code === 'EXPIRED' || st.code === 'REMINDER') {
-                selectedForRFQ.add(record.id);
+                const newId = 'custom-' + Date.now();
+                const newItem = {
+                    id: newId,
+                    no, section, kawasan, tempat, point, berat, expiry, workMode, locationStatus, notes,
+                    monthlyChecked: false,
+                    monthlyCheckedAt: ''
+                };
+                extinguishers.push(newItem);
+                const st = getStatusInfo(newItem);
+                if (workMode !== 'AUTO' || st.code === 'EXPIRED' || st.code === 'REMINDER') {
+                    selectedForRFQ.add(newId);
+                }
+                showToast(`Unit baharu No. ${no} (${kawasan}) berjaya ditambah!`, 'success');
             }
 
             closeItemModal();
             refreshAllViews();
-            await persistData(false);
+            await persistData(true);
         }
 
         function deleteItem(id) {
@@ -2217,13 +2200,13 @@
             if (!item) return;
 
             openConfirmDialog(
-                'Padam Rekod Pemadam Api?',
-                `Adakah anda pasti mahu memadam rekod No. ${item.no} (${item.kawasan} - ${item.tempat} Pt.${item.point})?`,
+                `Padam Rekod No. ${item.no}?`,
+                `Adakah anda pasti mahu memadam rekod pemadam api di ${item.kawasan} (${item.tempat} Pt.${item.point})?`,
                 async () => {
                     extinguishers = extinguishers.filter(x => x.id !== id);
                     selectedForRFQ.delete(id);
                     refreshAllViews();
-                    await persistData(false);
+                    await persistData(true);
                     showToast(`Rekod No. ${item.no} telah dipadam.`, 'info');
                 }
             );
@@ -2231,10 +2214,10 @@
 
         function confirmResetData() {
             openConfirmDialog(
-                'Reset Ke Data Asal SCK-DOSH-F11?',
-                'Semua perubahan tempatan dan awan akan ditetapkan semula kepada 50 rekod asal jadual SCK Wooden Industries Sdn Bhd (44 Kilang & 6 Hostel). Teruskan?',
+                'Reset Data ke Senarai Asal SCK-DOSH-F11?',
+                'Semua perubahan tempatan dan pilihan tambahan akan dipulihkan kepada senarai asal 50 unit SCK Wooden Industries Sdn Bhd. Teruskan?',
                 async () => {
-                    extinguishers = JSON.parse(JSON.stringify(INITIAL_SCK_DATA));
+                    extinguishers = JSON.parse(JSON.stringify(INITIAL_SCK_DATA)).map(normalizeItemRecord);
                     manualOffsets = {
                         service9: 0, service2: 0,
                         refill9: 0, refill2: 0,
@@ -2244,13 +2227,13 @@
                     autoSelectDueAndRefillUnits(false);
                     refreshAllViews();
                     await persistData(true);
-                    showToast('Data asal SCK-DOSH-F11 (50 unit) berjaya dipulihkan!', 'success');
+                    showToast('Data berjaya dipulihkan ke rekod asal SCK-DOSH-F11!', 'success');
                 }
             );
         }
 
         /**
-         * 8. QUOTATION GENERATOR, AUTO 50% STANDBY FE & WHATSAPP SHARE
+         * 8. QUOTATION, 50% TEMPORARY STANDBY FE & WHATSAPP GENERATOR
          */
         async function toggleRFQSelection(id) {
             if (selectedForRFQ.has(id)) {
@@ -2258,6 +2241,7 @@
             } else {
                 selectedForRFQ.add(id);
             }
+            updateDashboardStats();
             updateRFQPreview();
             await persistData(false);
         }
@@ -2271,16 +2255,10 @@
                     selectedForRFQ.add(item.id);
                 }
             });
-            manualOffsets = {
-                service9: 0, service2: 0,
-                refill9: 0, refill2: 0,
-                both9: 0, both2: 0,
-                standby9: 0, standby2: 0
-            };
             refreshAllViews();
+            await persistData(false);
             if (notify) {
-                await persistData(false);
-                showToast(`Auto-sync selesai: ${selectedForRFQ.size} unit keluar & 50% Standby FE dikira.`, 'info');
+                showToast(`Auto-pilih ${selectedForRFQ.size} unit yang perlu diservis/refill!`, 'success');
             }
         }
 
@@ -2294,82 +2272,67 @@
             };
             refreshAllViews();
             await persistData(false);
-            showToast('Senarai pilihan quotation dan standby telah dikosongkan.', 'info');
+            showToast('Semua pilihan quotation telah dikosongkan.', 'info');
         }
 
-        async function adjustManualCount(type, delta) {
-            const current = getCalculatedRFQCounts(false);
-            const nextVal = (current[type] || 0) + delta;
-            if (nextVal < 0) return;
-
-            manualOffsets[type] = (manualOffsets[type] || 0) + delta;
-            updateDashboardStats();
-            updateRFQPreview();
+        async function adjustManualCount(key, delta) {
+            manualOffsets[key] = (manualOffsets[key] || 0) + delta;
+            refreshAllViews();
             await persistData(false);
         }
 
-        function getCalculatedRFQCounts(useLiveAllIfEmpty = false) {
-            const selectedItems = extinguishers.filter(x => selectedForRFQ.has(x.id));
-            const sourceList = (useLiveAllIfEmpty && selectedItems.length === 0) ? extinguishers : selectedItems;
+        function getCalculatedRFQCounts(includeManual = true) {
+            let baseService9 = 0, baseService2 = 0;
+            let baseRefill9 = 0, baseRefill2 = 0;
+            let baseBoth9 = 0, baseBoth2 = 0;
+            const selectedItems = [];
 
-            let autoService9 = 0;
-            let autoService2 = 0;
-            let autoRefill9 = 0;
-            let autoRefill2 = 0;
-            let autoBoth9 = 0;
-            let autoBoth2 = 0;
+            extinguishers.forEach(item => {
+                if (!selectedForRFQ.has(item.id)) return;
+                selectedItems.push(item);
 
-            sourceList.forEach(item => {
                 const mode = item.workMode || 'AUTO';
-                const st = getStatusInfo(item);
-                const isDue = (st.code === 'EXPIRED' || st.code === 'REMINDER');
+                const is9 = item.berat === '9 KG';
+                const is2 = item.berat === '2 KG';
 
-                if (useLiveAllIfEmpty && selectedItems.length === 0 && mode === 'AUTO' && !isDue) {
-                    return;
-                }
-
-                if (mode === 'REFILL_AND_SERVICE') {
-                    if (item.berat === '9 KG') autoBoth9++;
-                    else if (item.berat === '2 KG') autoBoth2++;
-                } else if (mode === 'REFILL_ONLY') {
-                    if (item.berat === '9 KG') autoRefill9++;
-                    else if (item.berat === '2 KG') autoRefill2++;
+                if (mode === 'REFILL_ONLY') {
+                    if (is9) baseRefill9++;
+                    else if (is2) baseRefill2++;
+                } else if (mode === 'REFILL_AND_SERVICE') {
+                    if (is9) baseBoth9++;
+                    else if (is2) baseBoth2++;
                 } else {
-                    if (item.berat === '9 KG') autoService9++;
-                    else if (item.berat === '2 KG') autoService2++;
+                    if (is9) baseService9++;
+                    else if (is2) baseService2++;
                 }
             });
 
-            const service9 = Math.max(0, autoService9 + (manualOffsets.service9 || 0));
-            const service2 = Math.max(0, autoService2 + (manualOffsets.service2 || 0));
-            const refill9 = Math.max(0, autoRefill9 + (manualOffsets.refill9 || 0));
-            const refill2 = Math.max(0, autoRefill2 + (manualOffsets.refill2 || 0));
-            const both9 = Math.max(0, autoBoth9 + (manualOffsets.both9 || 0));
-            const both2 = Math.max(0, autoBoth2 + (manualOffsets.both2 || 0));
+            const service9 = Math.max(0, baseService9 + (includeManual ? (manualOffsets.service9 || 0) : 0));
+            const service2 = Math.max(0, baseService2 + (includeManual ? (manualOffsets.service2 || 0) : 0));
+            const refill9 = Math.max(0, baseRefill9 + (includeManual ? (manualOffsets.refill9 || 0) : 0));
+            const refill2 = Math.max(0, baseRefill2 + (includeManual ? (manualOffsets.refill2 || 0) : 0));
+            const both9 = Math.max(0, baseBoth9 + (includeManual ? (manualOffsets.both9 || 0) : 0));
+            const both2 = Math.max(0, baseBoth2 + (includeManual ? (manualOffsets.both2 || 0) : 0));
 
             const subtotal9 = service9 + refill9 + both9;
             const subtotal2 = service2 + refill2 + both2;
             const grandTotal = subtotal9 + subtotal2;
 
+            // Auto 50% Temporary / Standby FE (rounded up via Math.ceil)
             const autoStandby9 = Math.ceil(subtotal9 * 0.5);
             const autoStandby2 = Math.ceil(subtotal2 * 0.5);
-            const standby9 = Math.max(0, autoStandby9 + (manualOffsets.standby9 || 0));
-            const standby2 = Math.max(0, autoStandby2 + (manualOffsets.standby2 || 0));
+            const standby9 = Math.max(0, autoStandby9 + (includeManual ? (manualOffsets.standby9 || 0) : 0));
+            const standby2 = Math.max(0, autoStandby2 + (includeManual ? (manualOffsets.standby2 || 0) : 0));
             const standbyTotal = standby9 + standby2;
 
             return {
                 selectedItems,
-                service9,
-                service2,
-                refill9,
-                refill2,
-                both9,
-                both2,
-                subtotal9,
-                subtotal2,
+                service9, service2,
+                refill9, refill2,
+                both9, both2,
+                subtotal9, subtotal2,
                 grandTotal,
-                standby9,
-                standby2,
+                standby9, standby2,
                 standbyTotal
             };
         }
@@ -2380,9 +2343,11 @@
         }
 
         function updateRFQPreview() {
-            const counts = getCalculatedRFQCounts(false);
+            const counts = getCalculatedRFQCounts(true);
 
-            document.getElementById('rfq-badge-count').textContent = counts.grandTotal;
+            const badgeEl = document.getElementById('rfq-badge-count');
+            if (badgeEl) badgeEl.textContent = counts.grandTotal;
+
             document.getElementById('rfq-service-9kg').textContent = counts.service9;
             document.getElementById('rfq-service-2kg').textContent = counts.service2;
             document.getElementById('rfq-refill-9kg').textContent = counts.refill9;
@@ -2398,509 +2363,506 @@
             document.getElementById('rfq-standby-2kg').textContent = counts.standby2;
             document.getElementById('rfq-standby-total').textContent = counts.standbyTotal;
 
-            const cName = document.getElementById('contractor-name').value.trim();
-            const cPhone = document.getElementById('contractor-phone').value.trim();
-            const pickupDate = document.getElementById('service-pickup-date').value;
+            const cName = document.getElementById('contractor-name')?.value.trim() || 'Kontraktor Servis Pemadam Api';
+            const cPhone = document.getElementById('contractor-phone')?.value.trim() || '-';
+            const pDate = document.getElementById('service-pickup-date')?.value || '';
 
-            document.getElementById('preview-contractor-name').textContent = cName || 'Kontraktor Servis Pemadam Api';
-            document.getElementById('preview-contractor-phone').textContent = cPhone ? `Tel / WhatsApp: ${cPhone}` : '-';
-            document.getElementById('preview-pickup-date').textContent = pickupDate ? formatDisplayDate(pickupDate) : 'Segera / Mengikut Jadual Kontraktor';
+            document.getElementById('preview-contractor-name').textContent = cName;
+            document.getElementById('preview-contractor-phone').textContent = cPhone !== '-' ? `Tel / WhatsApp: ${cPhone}` : '-';
+            document.getElementById('preview-pickup-date').textContent = pDate ? formatDisplayDate(pDate) : 'Segera / Mengikut Jadual Kontraktor';
 
             const rfqTbody = document.getElementById('rfq-table-body');
-            rfqTbody.innerHTML = '';
+            if (rfqTbody) {
+                rfqTbody.innerHTML = '';
+                if (counts.selectedItems.length === 0) {
+                    rfqTbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-500">Tiada unit dipilih di jadual semakan.</td></tr>`;
+                } else {
+                    counts.selectedItems.forEach((item, idx) => {
+                        const mode = item.workMode || 'AUTO';
+                        let workBadge = `<span class="px-2 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 text-xs font-bold">Servis Tahunan</span>`;
+                        if (mode === 'REFILL_ONLY') {
+                            workBadge = `<span class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 text-xs font-bold">Refill Sahaja</span>`;
+                        } else if (mode === 'REFILL_AND_SERVICE') {
+                            workBadge = `<span class="px-2 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-xs font-bold">Refill & Servis (2in1)</span>`;
+                        }
 
-            if (counts.selectedItems.length === 0) {
-                rfqTbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">Tiada unit individu ditandakan di jadual. Anda masih boleh menggunakan pelaras (+ / -) di atas.</td></tr>`;
-            } else {
-                counts.selectedItems.forEach((item, index) => {
-                    const mode = item.workMode || 'AUTO';
-                    let workBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">Servis Sahaja</span>`;
-                    if (mode === 'REFILL_ONLY') {
-                        workBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300">Refill Sahaja</span>`;
-                    } else if (mode === 'REFILL_AND_SERVICE') {
-                        workBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">Refill & Servis (2in1)</span>`;
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="py-2 px-3 font-semibold">${index + 1}</td>
-                        <td class="py-2 px-3 font-bold">${item.no}</td>
-                        <td class="py-2 px-3">${item.kawasan} (${item.tempat} Pt.${item.point})</td>
-                        <td class="py-2 px-3 font-bold">${item.berat || '-'}</td>
-                        <td class="py-2 px-3">${workBadge}</td>
-                        <td class="py-2 px-3">${formatDisplayDate(item.expiry)}</td>
-                    `;
-                    rfqTbody.appendChild(tr);
-                });
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="py-2 px-3 font-semibold">${idx + 1}</td>
+                            <td class="py-2 px-3 font-bold">${item.no}</td>
+                            <td class="py-2 px-3">${item.kawasan} - ${item.tempat} (Pt. ${item.point})</td>
+                            <td class="py-2 px-3 font-bold">${item.berat || '-'}</td>
+                            <td class="py-2 px-3">${workBadge}</td>
+                            <td class="py-2 px-3">${formatDisplayDate(item.expiry)}</td>
+                        `;
+                        rfqTbody.appendChild(tr);
+                    });
+                }
             }
 
-            document.getElementById('whatsapp-message-preview').textContent = buildFormattedRFQMessage();
+            const msgPreviewEl = document.getElementById('whatsapp-message-preview');
+            if (msgPreviewEl) {
+                msgPreviewEl.textContent = buildFormattedRFQMessage();
+            }
         }
 
         function buildFormattedRFQMessage() {
-            const counts = getCalculatedRFQCounts(false);
-            const pickupDate = document.getElementById('service-pickup-date').value;
-            const includeStandby = document.getElementById('include-standby-toggle').checked;
-            const includeLocations = document.getElementById('include-locations-toggle').checked;
+            const counts = getCalculatedRFQCounts(true);
+            const includeStandby = document.getElementById('include-standby-toggle')?.checked ?? true;
+            const includeLocations = document.getElementById('include-locations-toggle')?.checked ?? false;
+            const pDate = document.getElementById('service-pickup-date')?.value || '';
 
-            let msg = `Salam tuan, mohon sebut harga (quotation) untuk servis & refill pemadam api di *SCK Wooden Industries Sdn Bhd*:\n`;
+            const lines = [];
+            lines.push(`Salam tuan, mohon sebut harga (*quotation*) untuk pemadam api di *SCK Wooden Industries Sdn Bhd*:`);
+            lines.push(``);
 
-            let sectionIndex = 1;
+            let sectionNum = 1;
 
+            // 1. Servis Sahaja (only non-zero lines)
             if (counts.service9 > 0 || counts.service2 > 0) {
-                msg += `\n*${sectionIndex}. Servis Tahunan Sahaja (Tamat / Akan Tamat Tempoh):*\n`;
-                if (counts.service9 > 0) msg += `- *9 KG:* ${counts.service9} Nos\n`;
-                if (counts.service2 > 0) msg += `- *2 KG:* ${counts.service2} Nos\n`;
-                sectionIndex++;
+                lines.push(`*${sectionNum}. Servis Tahunan Sahaja:*`);
+                if (counts.service9 > 0) lines.push(`- 9 KG: *${counts.service9} Nos*`);
+                if (counts.service2 > 0) lines.push(`- 2 KG: *${counts.service2} Nos*`);
+                lines.push(``);
+                sectionNum++;
             }
 
+            // 2. Refill Sahaja (only non-zero lines)
             if (counts.refill9 > 0 || counts.refill2 > 0) {
-                msg += `\n*${sectionIndex}. Refill Sahaja (Sudah Digunakan):*\n`;
-                if (counts.refill9 > 0) msg += `- *9 KG:* ${counts.refill9} Nos\n`;
-                if (counts.refill2 > 0) msg += `- *2 KG:* ${counts.refill2} Nos\n`;
-                sectionIndex++;
+                lines.push(`*${sectionNum}. Sudah Digunakan (Refill Sahaja):*`);
+                if (counts.refill9 > 0) lines.push(`- 9 KG: *${counts.refill9} Nos*`);
+                if (counts.refill2 > 0) lines.push(`- 2 KG: *${counts.refill2} Nos*`);
+                lines.push(``);
+                sectionNum++;
             }
 
+            // 3. Refill & Servis 2-in-1 (only non-zero lines)
             if (counts.both9 > 0 || counts.both2 > 0) {
-                msg += `\n*${sectionIndex}. Refill & Servis (2-dalam-1):*\n`;
-                if (counts.both9 > 0) msg += `- *9 KG:* ${counts.both9} Nos\n`;
-                if (counts.both2 > 0) msg += `- *2 KG:* ${counts.both2} Nos\n`;
-                sectionIndex++;
+                lines.push(`*${sectionNum}. Refill & Servis (2-in-1):*`);
+                if (counts.both9 > 0) lines.push(`- 9 KG: *${counts.both9} Nos*`);
+                if (counts.both2 > 0) lines.push(`- 2 KG: *${counts.both2} Nos*`);
+                lines.push(``);
+                sectionNum++;
             }
 
-            if (sectionIndex === 1) {
-                msg += `\n_(Tiada unit dipilih buat masa ini)_\n`;
-            }
+            lines.push(`*Jumlah Keseluruhan Tong Keluar:* *${counts.grandTotal} Nos*`);
 
-            if (includeStandby && (counts.standby9 > 0 || counts.standby2 > 0)) {
-                msg += `\n----------------------------------\n`;
-                msg += `*Permintaan Tong Standby Sementara (50%):*\n`;
-                msg += `Mohon pihak tuan sediakan unit *Temporary / Standby FE* di bawah sepanjang tempoh tong kami dibawa keluar:\n`;
-                if (counts.standby9 > 0) msg += `- *Standby 9 KG:* ${counts.standby9} Nos\n`;
-                if (counts.standby2 > 0) msg += `- *Standby 2 KG:* ${counts.standby2} Nos\n`;
-                msg += `----------------------------------\n`;
+            // Separate section for Temporary / Standby FE (50%) - not a paid quotation item
+            if (includeStandby && counts.standbyTotal > 0) {
+                lines.push(``);
+                lines.push(`----------------------------------------`);
+                lines.push(`*Permintaan Tong Standby Sementara (50%):*`);
+                lines.push(`Mohon pihak tuan sediakan unit Temporary / Standby FE di bawah sepanjang tempoh tong kami dibawa keluar:`);
+                if (counts.standby9 > 0) lines.push(`- Standby 9 KG: *${counts.standby9} Nos*`);
+                if (counts.standby2 > 0) lines.push(`- Standby 2 KG: *${counts.standby2} Nos*`);
+                lines.push(`----------------------------------------`);
             }
 
             if (includeLocations && counts.selectedItems.length > 0) {
-                msg += `\n*Senarai Lokasi Tong Keluar:*\n`;
-                counts.selectedItems.forEach((item, idx) => {
+                lines.push(``);
+                lines.push(`*Senarai Lokasi Tong:*`);
+                counts.selectedItems.forEach((item, i) => {
                     const mode = item.workMode || 'AUTO';
-                    const tag = mode === 'REFILL_AND_SERVICE' ? '2in1' : (mode === 'REFILL_ONLY' ? 'Refill' : 'Servis');
-                    msg += `${idx + 1}. No.${item.no} - ${item.kawasan} (${item.tempat} Pt.${item.point}) [${item.berat || '-'} | ${tag}]\n`;
+                    const tag = mode === 'REFILL_ONLY' ? 'Refill' : (mode === 'REFILL_AND_SERVICE' ? '2in1' : 'Servis');
+                    lines.push(`${i + 1}. [No.${item.no}] ${item.kawasan} - ${item.tempat} Pt.${item.point} (${item.berat || '-'}) [${tag}]`);
                 });
             }
 
-            if (pickupDate) {
-                msg += `\nCadangan tarikh ambil tong: *${formatDisplayDate(pickupDate)}*.\n`;
-            } else {
-                msg += `\nMohon maklumkan tarikh sesuai untuk pihak tuan datang ambil tong dan hantar quotation rasmi. Terima kasih.`;
+            lines.push(``);
+            if (pDate) {
+                lines.push(`Cadangan tarikh kutipan tong: *${formatDisplayDate(pDate)}*`);
             }
+            lines.push(`Mohon maklumkan tarikh sesuai untuk pihak tuan datang ambil tong dan hantar *quotation* rasmi. Terima kasih.`);
 
-            return msg;
+            return lines.join('\n');
         }
 
         function sendWhatsAppRFQ() {
-            const rawPhone = document.getElementById('contractor-phone').value.trim().replace(/[^0-9]/g, '');
-            const text = encodeURIComponent(buildFormattedRFQMessage());
-
-            if (!rawPhone) {
-                showToast('Sila masukkan No. WhatsApp kontraktor (cth: 60123456789) terlebih dahulu.', 'warning');
-                document.getElementById('contractor-phone').focus();
-                return;
-            }
-
-            const waUrl = `https://wa.me/${rawPhone}?text=${text}`;
-            window.open(waUrl, '_blank');
+            const rawPhone = (document.getElementById('contractor-phone')?.value || '').replace(/\D/g, '');
+            const msg = encodeURIComponent(buildFormattedRFQMessage());
+            const url = rawPhone
+                ? `https://wa.me/${rawPhone}?text=${msg}`
+                : `https://wa.me/?text=${msg}`;
+            window.open(url, '_blank');
         }
 
         function copyRFQText() {
             const text = buildFormattedRFQMessage();
-            const tempTextarea = document.createElement('textarea');
-            tempTextarea.value = text;
-            tempTextarea.style.position = 'fixed';
-            tempTextarea.style.left = '-9999px';
-            document.body.appendChild(tempTextarea);
-            tempTextarea.select();
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
             try {
                 document.execCommand('copy');
-                showToast('Mesej quotation & standby berjaya disalin! Sedia untuk ditampal (paste).', 'success');
+                showToast('Mesej quotation berjaya disalin ke clipboard!', 'success');
             } catch (err) {
-                showToast('Gagal menyalin teks. Sila pilih dan salin secara manual.', 'error');
+                showToast('Gagal menyalin teks. Sila salin secara manual.', 'error');
             }
-            document.body.removeChild(tempTextarea);
+            document.body.removeChild(textarea);
         }
 
         /**
-         * 9. MONTHLY AUDIT PROOF & BOSS REPORT MODULE
+         * 9. MONTHLY VERIFICATION PROOF & BOSS PRINT REPORT ENGINE
          */
-        function getCurrentYearMonthKey() {
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            return `${yyyy}-${mm}`;
+        const MALAY_MONTHS = [
+            'JANUARI', 'FEBRUARI', 'MAC', 'APRIL', 'MEI', 'JUN',
+            'JULAI', 'OGOS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DISEMBER'
+        ];
+
+        function formatMonthYearLabel(monthKey) {
+            if (!monthKey || !monthKey.includes('-')) return 'NOVEMBER 2026';
+            const [yr, mStr] = monthKey.split('-');
+            const mIdx = parseInt(mStr, 10) - 1;
+            const mName = MALAY_MONTHS[mIdx] || mStr;
+            return `${mName} ${yr}`;
         }
 
-        function formatMonthYearLabel(ymKey) {
-            if (!ymKey || !ymKey.includes('-')) return ymKey;
-            const [yyyy, mm] = ymKey.split('-');
-            const monthNames = [
-                'JANUARI', 'FEBRUARI', 'MAC', 'APRIL', 'MEI', 'JUN',
-                'JULAI', 'OGOS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DISEMBER'
-            ];
-            const idx = parseInt(mm, 10) - 1;
-            const mName = monthNames[idx] || mm;
-            return `${mName} ${yyyy}`;
-        }
-
-        function formatShortMonthYear(ymKey) {
-            if (!ymKey || !ymKey.includes('-')) return ymKey;
-            const [yyyy, mm] = ymKey.split('-');
-            const shortNames = ['JAN', 'FEB', 'MAC', 'APR', 'MEI', 'JUN', 'JUL', 'OGO', 'SEP', 'OKT', 'NOV', 'DIS'];
-            const idx = parseInt(mm, 10) - 1;
-            return `${shortNames[idx] || mm} ${yyyy}`;
+        function initMonthlyProofPicker() {
+            const picker = document.getElementById('proof-month-picker');
+            if (picker && !picker.value) {
+                const now = new Date();
+                const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                picker.value = ym;
+            }
+            onProofMonthChange();
         }
 
         function onProofMonthChange() {
-            const selectedMonth = document.getElementById('proof-month-picker').value;
-            const cert = monthlyCertifications[selectedMonth];
-            if (cert) {
-                document.getElementById('proof-inspector-name').value = cert.inspectorName || '';
-                document.getElementById('proof-remarks').value = cert.remarks || '';
+            const monthKey = document.getElementById('proof-month-picker')?.value || '2026-11';
+            const existing = monthlyCertifications[monthKey];
+
+            const inspectorInput = document.getElementById('proof-inspector-name');
+            const remarksInput = document.getElementById('proof-remarks');
+
+            if (existing) {
+                if (inspectorInput) inspectorInput.value = existing.inspectorName || '';
+                if (remarksInput) remarksInput.value = existing.remarks || '';
             }
             renderMonthlyProofView();
         }
 
-        async function certifyCurrentMonth() {
-            const selectedMonth = document.getElementById('proof-month-picker').value || getCurrentYearMonthKey();
-            const inspectorName = document.getElementById('proof-inspector-name').value.trim() || 'Pegawai Keselamatan / Admin SCK';
-            const remarks = document.getElementById('proof-remarks').value.trim() || 'Semua unit pemadam api telah diperiksa dan direkodkan mengikut piawaian SCK-DOSH-F11.';
-
-            const stats = computeLiveInspectionSummary();
-            const now = new Date();
-            const certifiedAtDisplay = now.toLocaleString('ms-MY', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            const certifiedDateShort = now.toLocaleDateString('ms-MY', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-
-            monthlyCertifications[selectedMonth] = {
-                monthKey: selectedMonth,
-                inspectorName: inspectorName,
-                remarks: remarks,
-                certifiedAt: certifiedAtDisplay,
-                certifiedDateShort: certifiedDateShort,
-                summary: stats,
-                snapshotRecords: JSON.parse(JSON.stringify(extinguishers))
-            };
-
-            refreshAllViews();
-            await persistData(true);
-            showToast(`Sah! Pemeriksaan bulan ${formatMonthYearLabel(selectedMonth)} telah dicop dan disimpan untuk laporan Boss.`, 'success');
-        }
-
-        function deleteMonthCertification() {
-            const selectedMonth = document.getElementById('proof-month-picker').value;
-            if (!selectedMonth || !monthlyCertifications[selectedMonth]) return;
-
-            openConfirmDialog(
-                `Batalkan Pengesahan ${formatMonthYearLabel(selectedMonth)}?`,
-                'Tindakan ini akan memadam cop pengesahan bagi bulan yang dipilih.',
-                async () => {
-                    delete monthlyCertifications[selectedMonth];
-                    refreshAllViews();
-                    await persistData(true);
-                    showToast(`Pengesahan bagi bulan ${formatMonthYearLabel(selectedMonth)} telah dibatalkan.`, 'info');
-                }
-            );
-        }
-
-        function computeLiveInspectionSummary() {
+        function computeCurrentExecutiveSummary() {
             let total = extinguishers.length;
             let active = 0;
-            let serviceDue = 0;
-            let refillOrBoth = 0;
-            let tempCount = 0;
-            let emptyCount = 0;
+            let service = 0;
+            let refillAndBoth = 0;
+            let temp = 0;
+            let empty = 0;
 
             extinguishers.forEach(item => {
                 const st = getStatusInfo(item);
                 const mode = item.workMode || 'AUTO';
                 const loc = item.locationStatus || 'NORMAL';
 
-                if (loc === 'TEMP') tempCount++;
-                if (loc === 'EMPTY') emptyCount++;
+                if (loc === 'TEMP') temp++;
+                if (loc === 'EMPTY') empty++;
 
                 if (mode === 'REFILL_ONLY' || mode === 'REFILL_AND_SERVICE') {
-                    refillOrBoth++;
+                    refillAndBoth++;
                 } else if (mode === 'SERVICE_ONLY' || st.code === 'EXPIRED' || st.code === 'REMINDER') {
-                    serviceDue++;
-                } else if (st.code === 'ACTIVE') {
+                    service++;
+                } else {
                     active++;
                 }
             });
 
-            return { total, active, serviceDue, refillOrBoth, tempCount, emptyCount };
+            return { total, active, service, refillAndBoth, temp, empty };
         }
 
         function renderMonthlyProofView() {
-            const picker = document.getElementById('proof-month-picker');
-            if (!picker.value) {
-                picker.value = getCurrentYearMonthKey();
-            }
-            const selectedMonth = picker.value;
-            const currentSystemMonth = getCurrentYearMonthKey();
-            const cert = monthlyCertifications[selectedMonth];
+            const monthKey = document.getElementById('proof-month-picker')?.value || '2026-11';
+            const monthLabel = formatMonthYearLabel(monthKey);
+            const cert = monthlyCertifications[monthKey];
 
-            // Update top nav badge based on current real-world month
+            // Update Round Progress Header Month Label
+            const roundLabelEl = document.getElementById('round-month-label');
+            if (roundLabelEl) roundLabelEl.textContent = monthLabel;
+
+            // Update Nav Tab Badge
             const navBadge = document.getElementById('monthly-proof-nav-badge');
-            if (monthlyCertifications[currentSystemMonth]) {
-                navBadge.className = 'px-2 py-0.5 text-[11px] rounded-full bg-emerald-600 text-white font-extrabold';
-                navBadge.innerHTML = `<i class="fa-solid fa-check mr-0.5"></i> ${formatShortMonthYear(currentSystemMonth)} Checked`;
-            } else {
-                navBadge.className = 'px-2 py-0.5 text-[11px] rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 font-extrabold';
-                navBadge.textContent = `${formatShortMonthYear(currentSystemMonth)}: Belum`;
+            if (navBadge) {
+                if (cert) {
+                    navBadge.textContent = 'Sah ✓';
+                    navBadge.className = 'px-2 py-0.5 text-[11px] rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 font-extrabold';
+                } else {
+                    navBadge.textContent = 'Belum Sah';
+                    navBadge.className = 'px-2 py-0.5 text-[11px] rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 font-extrabold';
+                }
             }
 
-            // Document Header
-            document.getElementById('proof-doc-month-badge').textContent = `BULAN: ${formatMonthYearLabel(selectedMonth)}`;
-            document.getElementById('proof-doc-ref-no').textContent = `No. Rujukan: SCK-FE-${selectedMonth}`;
+            // Document Header Badges
+            const docMonthBadge = document.getElementById('proof-doc-month-badge');
+            const docRefNo = document.getElementById('proof-doc-ref-no');
+            if (docMonthBadge) docMonthBadge.textContent = `BULAN: ${monthLabel}`;
+            if (docRefNo) docRefNo.textContent = `No. Rujukan: SCK-FE-${monthKey}`;
 
-            const stampBanner = document.getElementById('proof-stamp-banner');
-            const stampIconBox = document.getElementById('proof-stamp-icon-box');
-            const stampIcon = document.getElementById('proof-stamp-icon');
-            const stampTitle = document.getElementById('proof-stamp-title');
-            const stampPill = document.getElementById('proof-stamp-pill');
-            const stampSubtitle = document.getElementById('proof-stamp-subtitle');
-            const digitalSeal = document.getElementById('proof-digital-seal');
-            const btnUnverify = document.getElementById('btn-unverify-month');
-            const btnCertify = document.getElementById('btn-certify-month');
+            // Stamp Banner & Digital Seal
+            const banner = document.getElementById('proof-stamp-banner');
+            const iconBox = document.getElementById('proof-stamp-icon-box');
+            const icon = document.getElementById('proof-stamp-icon');
+            const title = document.getElementById('proof-stamp-title');
+            const pill = document.getElementById('proof-stamp-pill');
+            const subtitle = document.getElementById('proof-stamp-subtitle');
+            const seal = document.getElementById('proof-digital-seal');
+            const unverifyBtn = document.getElementById('btn-unverify-month');
 
-            const statsToDisplay = cert ? cert.summary : computeLiveInspectionSummary();
+            const inspectorInputVal = document.getElementById('proof-inspector-name')?.value.trim() || '';
+            const remarksInputVal = document.getElementById('proof-remarks')?.value.trim() || '';
+
+            const summary = cert ? cert.summary : computeCurrentExecutiveSummary();
             const recordsToDisplay = cert && Array.isArray(cert.snapshotRecords) ? cert.snapshotRecords : extinguishers;
 
             if (cert) {
-                stampBanner.className = 'mb-6 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
-                stampIconBox.className = 'w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md';
-                stampIcon.className = 'fa-solid fa-circle-check text-2xl';
-                stampTitle.className = 'text-base font-extrabold text-emerald-950 dark:text-emerald-200';
-                stampTitle.textContent = `PEMERIKSAAN BULAN ${formatMonthYearLabel(selectedMonth)} TELAH SELESAI`;
-                stampPill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-600 text-white';
-                stampPill.textContent = 'SAH DIPERIKSA';
-                stampSubtitle.innerHTML = `Disahkan oleh <strong>${cert.inspectorName}</strong> pada <strong>${cert.certifiedAt}</strong>. Rekod ini dikunci sebagai bukti rasmi untuk semakan pihak pengurusan.`;
-
-                digitalSeal.classList.remove('hidden');
-                document.getElementById('proof-seal-month').textContent = formatShortMonthYear(selectedMonth);
-                document.getElementById('proof-seal-date').textContent = cert.certifiedDateShort || '';
-
-                btnUnverify.classList.remove('hidden');
-                btnCertify.innerHTML = `<i class="fa-solid fa-rotate text-base"></i> <span>Kemaskini Semula Cop Bulan Ini</span>`;
-
-                document.getElementById('proof-preview-inspector').textContent = cert.inspectorName;
-                document.getElementById('proof-sign-inspector').textContent = cert.inspectorName;
-                document.getElementById('proof-preview-timestamp').textContent = cert.certifiedAt;
-                document.getElementById('proof-preview-remarks').textContent = cert.remarks;
+                if (banner) banner.className = 'mb-6 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
+                if (iconBox) iconBox.className = 'w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md';
+                if (icon) icon.className = 'fa-solid fa-circle-check text-xl';
+                if (title) {
+                    title.textContent = `DISAHKAN SELESAI CHECK (${monthLabel})`;
+                    title.className = 'text-base font-extrabold text-emerald-900 dark:text-emerald-200';
+                }
+                if (pill) {
+                    pill.textContent = 'VERIFIED CHECKED ✓';
+                    pill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-600 text-white';
+                }
+                if (subtitle) {
+                    subtitle.innerHTML = `Pemeriksaan fizikal bulanan telah disahkan oleh <strong>${cert.inspectorName}</strong> pada <strong>${cert.certifiedAtDisplay}</strong>.`;
+                }
+                if (seal) {
+                    seal.classList.remove('hidden');
+                    document.getElementById('proof-seal-month').textContent = monthLabel;
+                    document.getElementById('proof-seal-date').textContent = cert.certifiedDateShort || '';
+                }
+                if (unverifyBtn) unverifyBtn.classList.remove('hidden');
             } else {
-                const liveInspector = document.getElementById('proof-inspector-name').value.trim() || 'Pegawai Keselamatan / Admin SCK';
-                const liveRemarks = document.getElementById('proof-remarks').value.trim() || 'Belum disahkan. Tekan butang "Sahkan & Cop Siap Check Bulan Ini" untuk merekodkan bukti pemeriksaan.';
-
-                stampBanner.className = 'mb-6 p-4 sm:p-5 rounded-2xl border-2 border-dashed border-amber-400 bg-amber-50/70 dark:bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
-                stampIconBox.className = 'w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md';
-                stampIcon.className = 'fa-solid fa-hourglass-half text-xl';
-                stampTitle.className = 'text-base font-extrabold text-amber-900 dark:text-amber-200';
-                stampTitle.textContent = `MENUNGGU PENGESAHAN (${formatMonthYearLabel(selectedMonth)})`;
-                stampPill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-200 text-amber-900';
-                stampPill.textContent = 'BELUM DISAHKAN';
-                stampSubtitle.innerHTML = `Sila tekan butang <strong>"Sahkan & Cop Siap Check Bulan Ini"</strong> selepas selesai menyemak semua unit pemadam api.`;
-
-                digitalSeal.classList.add('hidden');
-                btnUnverify.classList.add('hidden');
-                btnCertify.innerHTML = `<i class="fa-solid fa-certificate text-base"></i> <span>Sahkan & Cop Siap Check Bulan Ini</span>`;
-
-                document.getElementById('proof-preview-inspector').textContent = liveInspector;
-                document.getElementById('proof-sign-inspector').textContent = liveInspector;
-                document.getElementById('proof-preview-timestamp').textContent = 'Belum Disahkan';
-                document.getElementById('proof-preview-remarks').textContent = liveRemarks;
+                if (banner) banner.className = 'mb-6 p-4 sm:p-5 rounded-2xl border-2 border-dashed border-amber-400 bg-amber-50/70 dark:bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4';
+                if (iconBox) iconBox.className = 'w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md';
+                if (icon) icon.className = 'fa-solid fa-hourglass-half text-xl';
+                if (title) {
+                    title.textContent = `MENUNGGU PENGESAHAN BULANAN (${monthLabel})`;
+                    title.className = 'text-base font-extrabold text-amber-900 dark:text-amber-200';
+                }
+                if (pill) {
+                    pill.textContent = 'BELUM DISAHKAN';
+                    pill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-200 text-amber-900';
+                }
+                if (subtitle) {
+                    subtitle.innerHTML = `Sila tekan butang <strong>"Sahkan & Cop Siap Check Bulan Ini"</strong> selepas selesai memeriksa semua unit pemadam api.`;
+                }
+                if (seal) seal.classList.add('hidden');
+                if (unverifyBtn) unverifyBtn.classList.add('hidden');
             }
 
-            // Stats boxes
-            document.getElementById('proof-stat-total').textContent = statsToDisplay.total;
-            document.getElementById('proof-stat-active').textContent = statsToDisplay.active;
-            document.getElementById('proof-stat-service').textContent = statsToDisplay.serviceDue;
-            document.getElementById('proof-stat-refill').textContent = statsToDisplay.refillOrBoth;
-            document.getElementById('proof-stat-temp').textContent = statsToDisplay.tempCount;
-            document.getElementById('proof-stat-empty').textContent = statsToDisplay.emptyCount;
+            // Executive Summary Numbers
+            document.getElementById('proof-stat-total').textContent = summary.total;
+            document.getElementById('proof-stat-active').textContent = summary.active;
+            document.getElementById('proof-stat-service').textContent = summary.service;
+            document.getElementById('proof-stat-refill').textContent = summary.refillAndBoth;
+            document.getElementById('proof-stat-temp').textContent = summary.temp;
+            document.getElementById('proof-stat-empty').textContent = summary.empty;
 
-            // Render 50-unit checklist table
+            // Inspector & Remarks Preview
+            const activeInspector = cert ? cert.inspectorName : (inspectorInputVal || 'Pegawai Keselamatan / PIC');
+            const activeRemarks = cert ? (cert.remarks || 'Semua unit pemadam api telah diperiksa mengikut jadual bulanan.') : (remarksInputVal || 'Tiada catatan tambahan.');
+            document.getElementById('proof-preview-inspector').textContent = activeInspector;
+            document.getElementById('proof-sign-inspector').textContent = activeInspector;
+            document.getElementById('proof-preview-timestamp').textContent = cert ? cert.certifiedAtDisplay : 'Belum Disahkan';
+            document.getElementById('proof-preview-remarks').textContent = activeRemarks;
+
+            // Populate Complete Checklist Table
             const tbody = document.getElementById('proof-checklist-tbody');
-            tbody.innerHTML = '';
-            recordsToDisplay.forEach(item => {
-                const st = getStatusInfo(item);
-                const mode = item.workMode || 'AUTO';
-                const loc = item.locationStatus || 'NORMAL';
+            if (tbody) {
+                tbody.innerHTML = '';
+                recordsToDisplay.forEach(item => {
+                    const st = getStatusInfo(item);
+                    const mode = item.workMode || 'AUTO';
+                    const loc = item.locationStatus || 'NORMAL';
 
-                let statusText = 'Baik / Aktif';
-                if (loc === 'EMPTY') statusText = 'LOKASI KOSONG (Tiada FE)';
-                else if (loc === 'TEMP') statusText = 'Diganti Temporary FE';
-                else if (mode === 'REFILL_AND_SERVICE') statusText = 'Refill & Servis (2-in-1)';
-                else if (mode === 'REFILL_ONLY') statusText = 'Perlu Refill (Sudah Guna)';
-                else if (mode === 'SERVICE_ONLY' || st.code === 'EXPIRED') statusText = 'Tamat Tempoh (Perlu Servis)';
-                else if (st.code === 'REMINDER') statusText = 'Akan Tamat Tempoh (<=1 Bln)';
-                else if (st.code === 'CHECK') statusText = 'Perlu Semakan Rekod';
+                    let statusText = 'Aktif / Baik';
+                    if (loc === 'EMPTY') statusText = 'LOKASI KOSONG (Tiada FE)';
+                    else if (loc === 'TEMP') statusText = 'Diganti Temporary FE';
+                    else if (mode === 'REFILL_AND_SERVICE') statusText = 'Refill & Servis (2-in-1)';
+                    else if (mode === 'REFILL_ONLY') statusText = 'Perlu Refill (Sudah Guna)';
+                    else if (mode === 'SERVICE_ONLY' || st.code === 'EXPIRED' || st.code === 'REMINDER') statusText = 'Perlu Servis Tahunan';
+                    else if (st.code === 'CHECK') statusText = 'Tiada Rekod Tarikh (X)';
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-1.5 px-2.5 font-bold">${item.no}</td>
-                    <td class="py-1.5 px-2.5 font-semibold">${item.kawasan}</td>
-                    <td class="py-1.5 px-2.5">${item.tempat} Pt.${item.point}</td>
-                    <td class="py-1.5 px-2.5 font-bold">${item.berat || '-'}</td>
-                    <td class="py-1.5 px-2.5">${formatDisplayDate(item.expiry)}</td>
-                    <td class="py-1.5 px-2.5 font-medium">${statusText}</td>
-                    <td class="py-1.5 px-2.5 text-center font-extrabold text-emerald-700 dark:text-emerald-400">${cert ? '[✓]' : '[ ]'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Render Monthly History List
-            const historyList = document.getElementById('monthly-history-list');
-            const keys = Object.keys(monthlyCertifications).sort().reverse();
-            document.getElementById('history-count-badge').textContent = `${keys.length} Rekod`;
-            historyList.innerHTML = '';
-
-            if (keys.length === 0) {
-                historyList.innerHTML = `<p class="text-xs text-slate-400 italic py-3 text-center">Belum ada rekod pengesahan bulanan disimpan.</p>`;
-            } else {
-                keys.forEach(k => {
-                    const rec = monthlyCertifications[k];
-                    const isSelected = k === selectedMonth;
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.onclick = () => {
-                        document.getElementById('proof-month-picker').value = k;
-                        onProofMonthChange();
-                    };
-                    btn.className = `w-full text-left p-3 rounded-xl border transition flex items-center justify-between ${isSelected ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500' : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-emerald-400'}`;
-                    btn.innerHTML = `
-                        <div>
-                            <div class="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                                <span>${formatMonthYearLabel(k)}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Oleh: ${rec.inspectorName} &bull; ${rec.certifiedDateShort || ''}</div>
-                        </div>
-                        <span class="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">Lihat &rarr;</span>
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="py-1.5 px-2.5 font-bold">${item.no}</td>
+                        <td class="py-1.5 px-2.5 font-semibold">${item.kawasan}</td>
+                        <td class="py-1.5 px-2.5">${item.tempat} (Pt. ${item.point})</td>
+                        <td class="py-1.5 px-2.5 font-bold">${item.berat || '-'}</td>
+                        <td class="py-1.5 px-2.5">${formatDisplayDate(item.expiry)}</td>
+                        <td class="py-1.5 px-2.5 font-semibold">${statusText}</td>
+                        <td class="py-1.5 px-2.5 text-center font-extrabold text-emerald-700">${item.monthlyChecked || cert ? '[ ✓ ]' : '[   ]'}</td>
                     `;
-                    historyList.appendChild(btn);
+                    tbody.appendChild(tr);
                 });
             }
+
+            // Render Monthly History List
+            renderMonthlyHistoryList();
+        }
+
+        function renderMonthlyHistoryList() {
+            const listEl = document.getElementById('monthly-history-list');
+            const countBadge = document.getElementById('history-count-badge');
+            if (!listEl) return;
+
+            const keys = Object.keys(monthlyCertifications).sort().reverse();
+            if (countBadge) countBadge.textContent = `${keys.length} Rekod`;
+
+            if (keys.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada sejarah pengesahan bulanan disimpan.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = '';
+            keys.forEach(k => {
+                const c = monthlyCertifications[k];
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => {
+                    document.getElementById('proof-month-picker').value = k;
+                    onProofMonthChange();
+                };
+                btn.className = 'w-full text-left p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50 dark:bg-slate-800/80 dark:hover:bg-emerald-950/30 border border-slate-200 dark:border-slate-700 flex items-center justify-between transition';
+                btn.innerHTML = `
+                    <div>
+                        <div class="text-xs font-extrabold text-slate-900 dark:text-white">${formatMonthYearLabel(k)}</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">Oleh: ${c.inspectorName} &bull; ${c.certifiedDateShort}</div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 text-[10px] font-extrabold">VERIFIED ✓</span>
+                `;
+                listEl.appendChild(btn);
+            });
+        }
+
+        async function certifyCurrentMonth() {
+            const monthKey = document.getElementById('proof-month-picker')?.value || '2026-11';
+            const inspectorName = document.getElementById('proof-inspector-name')?.value.trim() || 'Pegawai Keselamatan / PIC';
+            const remarks = document.getElementById('proof-remarks')?.value.trim() || 'Semua unit pemadam api telah diperiksa fizikal dan direkodkan mengikut piawaian SCK-DOSH-F11.';
+
+            const now = new Date();
+            const certifiedAtDisplay = now.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+            const certifiedDateShort = now.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            const snapshotRecords = extinguishers.map(item => ({
+                ...item,
+                monthlyChecked: true
+            }));
+
+            monthlyCertifications[monthKey] = {
+                monthKey,
+                inspectorName,
+                remarks,
+                certifiedAtDisplay,
+                certifiedDateShort,
+                summary: computeCurrentExecutiveSummary(),
+                snapshotRecords
+            };
+
+            renderMonthlyProofView();
+            await persistData(true);
+            showToast(`Pengesahan pemeriksaan ${formatMonthYearLabel(monthKey)} berjaya direkod dan dicop!`, 'success');
+        }
+
+        function deleteMonthCertification() {
+            const monthKey = document.getElementById('proof-month-picker')?.value || '2026-11';
+            openConfirmDialog(
+                `Batalkan Pengesahan ${formatMonthYearLabel(monthKey)}?`,
+                'Rekod cop pengesahan bagi bulan ini akan dipadam supaya anda boleh menyemak semula. Teruskan?',
+                async () => {
+                    delete monthlyCertifications[monthKey];
+                    renderMonthlyProofView();
+                    await persistData(true);
+                    showToast(`Pengesahan bagi ${formatMonthYearLabel(monthKey)} telah dibatalkan.`, 'info');
+                }
+            );
         }
 
         function printMonthlyProofReport() {
-            const selectedMonth = document.getElementById('proof-month-picker').value;
-            if (!monthlyCertifications[selectedMonth]) {
-                showToast('Tip: Klik "Sahkan & Cop Siap Check Bulan Ini" dahulu supaya laporan cetakan mempunyai cop rasmi "SAH DIPERIKSA".', 'warning');
-            }
             window.print();
         }
 
         /**
-         * 10. TABS, DARK MODE, TOASTS & CUSTOM CONFIRM MODAL
+         * 10. TAB NAVIGATION, DARK MODE, TOASTS & CUSTOM MODALS
          */
         function switchTab(tabName) {
-            const monitorView = document.getElementById('view-monitor');
-            const proofView = document.getElementById('view-monthly-proof');
-            const rfqView = document.getElementById('view-rfq');
+            const views = ['monitor', 'monthly-proof', 'rfq'];
+            views.forEach(v => {
+                const viewEl = document.getElementById(`view-${v}`);
+                const btnEl = document.getElementById(`tab-btn-${v}`);
+                if (viewEl) {
+                    if (v === tabName) viewEl.classList.remove('hidden');
+                    else viewEl.classList.add('hidden');
+                }
+                if (btnEl) {
+                    if (v === tabName) {
+                        btnEl.className = 'px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm flex items-center gap-2 shrink-0 transition';
+                    } else {
+                        btnEl.className = 'px-4 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0 transition';
+                    }
+                }
+            });
 
-            const btnMonitor = document.getElementById('tab-btn-monitor');
-            const btnProof = document.getElementById('tab-btn-monthly-proof');
-            const btnRfq = document.getElementById('tab-btn-rfq');
-
-            const activeBtnClass = 'px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm flex items-center gap-2 shrink-0 transition';
-            const inactiveBtnClass = 'px-4 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0 transition';
-
-            monitorView.classList.add('hidden');
-            proofView.classList.add('hidden');
-            rfqView.classList.add('hidden');
-
-            btnMonitor.className = inactiveBtnClass;
-            btnProof.className = inactiveBtnClass;
-            btnRfq.className = inactiveBtnClass;
-
-            if (tabName === 'monitor') {
-                monitorView.classList.remove('hidden');
-                btnMonitor.className = activeBtnClass;
-            } else if (tabName === 'monthly-proof') {
-                proofView.classList.remove('hidden');
-                btnProof.className = activeBtnClass;
-                renderMonthlyProofView();
-            } else {
-                rfqView.classList.remove('hidden');
-                btnRfq.className = activeBtnClass;
-                updateRFQPreview();
-            }
+            if (tabName === 'rfq') updateRFQPreview();
+            if (tabName === 'monthly-proof') renderMonthlyProofView();
         }
 
         function initTheme() {
-            const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            const saved = localStorage.getItem(STORAGE_KEY_THEME);
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved === 'dark' || (!saved && prefersDark)) {
                 document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
                 document.getElementById('theme-icon').className = 'fa-solid fa-sun text-lg';
             } else {
                 document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
                 document.getElementById('theme-icon').className = 'fa-solid fa-moon text-lg';
             }
         }
 
         function toggleDarkMode() {
-            const html = document.documentElement;
-            const icon = document.getElementById('theme-icon');
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                localStorage.setItem(STORAGE_KEY_THEME, 'light');
-                icon.className = 'fa-solid fa-moon text-lg';
-            } else {
-                html.classList.add('dark');
-                localStorage.setItem(STORAGE_KEY_THEME, 'dark');
-                icon.className = 'fa-solid fa-sun text-lg';
-            }
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.documentElement.classList.toggle('light', !isDark);
+            localStorage.setItem(STORAGE_KEY_THEME, isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun text-lg' : 'fa-solid fa-moon text-lg';
         }
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let colors = 'bg-slate-900 text-white border-slate-700';
-            let icon = 'fa-circle-info text-blue-400';
-            if (type === 'success') {
-                colors = 'bg-emerald-900 text-white border-emerald-700';
-                icon = 'fa-circle-check text-emerald-400';
-            } else if (type === 'warning') {
-                colors = 'bg-amber-900 text-white border-amber-700';
-                icon = 'fa-triangle-exclamation text-amber-400';
-            } else if (type === 'error') {
-                colors = 'bg-red-900 text-white border-red-700';
-                icon = 'fa-circle-xmark text-red-400';
-            }
+            if (!container) return;
 
-            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3.5 rounded-2xl border shadow-xl text-xs sm:text-sm font-medium transform transition-all duration-300 ${colors}`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base shrink-0"></i><span class="flex-1">${message}</span>`;
+            const colors = {
+                success: 'bg-emerald-600 text-white border-emerald-500',
+                error: 'bg-red-600 text-white border-red-500',
+                info: 'bg-slate-900 text-white border-slate-700 dark:bg-slate-800'
+            };
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-exclamation',
+                info: 'fa-circle-info'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border text-xs sm:text-sm font-semibold transform transition-all duration-300 ${colors[type] || colors.info}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icons[type] || icons.info} text-base shrink-0"></i>
+                <span class="flex-1">${message}</span>
+            `;
             container.appendChild(toast);
 
             setTimeout(() => {
                 toast.style.opacity = '0';
-                toast.style.transform = 'translateY(-10px)';
+                toast.style.transform = 'translateY(-8px)';
                 setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            }, 3500);
         }
 
-        function openConfirmDialog(title, message, onConfirmCallback) {
+        function openConfirmDialog(title, message, onConfirm) {
             const modal = document.getElementById('confirm-modal');
             document.getElementById('confirm-title').textContent = title;
             document.getElementById('confirm-message').textContent = message;
@@ -2908,42 +2870,24 @@
             const okBtn = document.getElementById('confirm-ok-btn');
             const cancelBtn = document.getElementById('confirm-cancel-btn');
 
-            const cleanup = () => {
+            const close = () => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
             };
 
-            okBtn.onclick = () => {
-                cleanup();
-                onConfirmCallback();
+            cancelBtn.onclick = close;
+            okBtn.onclick = async () => {
+                close();
+                if (typeof onConfirm === 'function') await onConfirm();
             };
-            cancelBtn.onclick = cleanup;
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
 
         /**
-         * 10. FIREBASE AUTHENTICATION (STRICTLY signInWithPopup ONLY) & UI STATE
+         * 11. FIREBASE AUTHENTICATION (STRICTLY signInWithPopup)
          */
-        function setupFirebaseAuthListener() {
-            if (!firebaseAuth) return;
-
-            firebaseAuth.onAuthStateChanged((user) => {
-                currentUser = user;
-                updateAuthUI(user);
-
-                if (user) {
-                    attachFirestoreRealtimeListener(user);
-                } else {
-                    if (firestoreUnsubscribe) {
-                        firestoreUnsubscribe();
-                        firestoreUnsubscribe = null;
-                    }
-                }
-            });
-        }
-
         function openAuthModal() {
             const modal = document.getElementById('auth-modal');
             modal.classList.remove('hidden');
@@ -2958,123 +2902,126 @@
 
         async function loginWithGooglePopup() {
             if (!firebaseAuth) {
-                showToast('Perkhidmatan Firebase Auth tidak tersedia pada pelayar ini.', 'error');
+                showToast('Firebase Auth tidak tersedia. Aplikasi kekal dalam Mod Tetamu.', 'error');
                 return;
             }
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
-                // STRICTLY USING signInWithPopup ONLY (NO signInWithRedirect)
+                provider.setCustomParameters({ prompt: 'select_account' });
                 const result = await firebaseAuth.signInWithPopup(provider);
-                if (result.user) {
-                    showToast(`Log masuk berjaya: ${result.user.displayName || result.user.email}. Penyegerakan awan aktif!`, 'success');
+                if (result && result.user) {
+                    showToast(`Selamat datang, ${result.user.displayName || result.user.email}! Cloud Sync aktif.`, 'success');
                     closeAuthModal();
                 }
-            } catch (error) {
-                console.error('Google Popup Sign-In Error:', error);
-                showToast(`Log masuk dibatalkan atau gagal: ${error.message}`, 'error');
+            } catch (err) {
+                console.error('Google Popup Sign-In Error:', err);
+                showToast(`Log masuk Google gagal: ${err.message}`, 'error');
             }
         }
 
         async function logoutFirebase() {
-            if (firebaseAuth) {
+            if (!firebaseAuth) return;
+            try {
                 if (firestoreUnsubscribe) {
                     firestoreUnsubscribe();
                     firestoreUnsubscribe = null;
                 }
                 await firebaseAuth.signOut();
-                currentUser = null;
-                updateAuthUI(null);
-                showToast('Anda telah log keluar. Kembali ke Mod Tetamu (Simpanan Lokal).', 'info');
+                showToast('Anda telah log keluar. Data kekal selamat dalam Mod Tetamu.', 'info');
+                closeAuthModal();
+            } catch (err) {
+                showToast(`Ralat log keluar: ${err.message}`, 'error');
             }
         }
 
         function updateAuthUI(user) {
+            currentUser = user;
             const syncBadge = document.getElementById('sync-badge');
             const headerSyncBtn = document.getElementById('header-manual-sync-btn');
-            const userAvatar = document.getElementById('auth-user-avatar');
+            const avatarEl = document.getElementById('auth-user-avatar');
             const googleIcon = document.getElementById('auth-google-icon');
             const userLabel = document.getElementById('auth-user-label');
 
-            const modalStatusCard = document.getElementById('modal-status-card');
-            const modalConnPill = document.getElementById('modal-connection-pill');
+            const modalPill = document.getElementById('modal-connection-pill');
             const modalStatus = document.getElementById('modal-auth-status');
-            const modalSyncDetail = document.getElementById('modal-sync-detail');
             const modalLastSyncRow = document.getElementById('modal-last-sync-row');
-
             const btnLogin = document.getElementById('btn-google-popup');
             const btnManualSync = document.getElementById('btn-manual-cloud-sync');
             const btnLogout = document.getElementById('btn-google-logout');
 
             if (user) {
-                // Header Status
-                syncBadge.className = 'text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-900 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1.5 transition cursor-pointer';
-                syncBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span>Cloud Sync Aktif: pemadam-api-sck</span>`;
-                
-                if (headerSyncBtn) headerSyncBtn.classList.remove('hidden');
-
-                if (user.photoURL) {
-                    userAvatar.src = user.photoURL;
-                    userAvatar.classList.remove('hidden');
-                    googleIcon.classList.add('hidden');
-                } else {
-                    userAvatar.classList.add('hidden');
-                    googleIcon.classList.remove('hidden');
+                if (syncBadge) {
+                    syncBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Cloud Sync Aktif: pemadam-api-sck</span>`;
                 }
-                userLabel.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Akaun Google';
+                if (headerSyncBtn) headerSyncBtn.classList.remove('hidden');
+                if (avatarEl && user.photoURL) {
+                    avatarEl.src = user.photoURL;
+                    avatarEl.classList.remove('hidden');
+                    if (googleIcon) googleIcon.classList.add('hidden');
+                }
+                if (userLabel) userLabel.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Akaun Google';
 
-                // Modal Status
-                modalStatusCard.className = 'p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 space-y-2';
-                modalConnPill.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-600 text-white';
-                modalConnPill.textContent = 'Cloud Sync Aktif: pemadam-api-sck';
-                modalStatus.textContent = `${user.displayName || 'Pengguna Google'} (${user.email})`;
-                modalSyncDetail.textContent = 'Penyegerakan masa nyata (real-time) aktif. Sebarang perubahan pada peranti ini akan dikemas kini terus ke iPad, iPhone, dan PC lain yang menggunakan akaun Google yang sama.';
-                modalLastSyncRow.classList.remove('hidden');
+                if (modalPill) {
+                    modalPill.textContent = 'Cloud Sync Aktif ✓';
+                    modalPill.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300';
+                }
+                if (modalStatus) modalStatus.textContent = `Log masuk sebagai: ${user.displayName || ''} (${user.email})`;
+                if (modalLastSyncRow) modalLastSyncRow.classList.remove('hidden');
+                if (btnLogin) btnLogin.classList.add('hidden');
+                if (btnManualSync) btnManualSync.classList.remove('hidden');
+                if (btnLogout) btnLogout.classList.remove('hidden');
 
-                btnLogin.classList.add('hidden');
-                btnManualSync.classList.remove('hidden');
-                btnLogout.classList.remove('hidden');
+                attachFirestoreRealtimeListener(user);
             } else {
-                // Header Status
-                syncBadge.className = 'text-[10px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-950/70 dark:hover:bg-amber-900/70 dark:text-amber-300 border border-amber-300 dark:border-amber-800 flex items-center gap-1.5 transition cursor-pointer';
-                syncBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> <span>Mod Tetamu (Simpanan Lokal)</span>`;
-                
+                if (syncBadge) {
+                    syncBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Mod Tetamu (Simpanan Lokal)</span>`;
+                }
                 if (headerSyncBtn) headerSyncBtn.classList.add('hidden');
+                if (avatarEl) avatarEl.classList.add('hidden');
+                if (googleIcon) googleIcon.classList.remove('hidden');
+                if (userLabel) userLabel.textContent = 'Log Masuk Google';
 
-                userAvatar.classList.add('hidden');
-                googleIcon.classList.remove('hidden');
-                userLabel.textContent = 'Log Masuk Google';
-
-                // Modal Status
-                modalStatusCard.className = 'p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2';
-                modalConnPill.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
-                modalConnPill.textContent = 'Mod Tetamu (Simpanan Lokal)';
-                modalStatus.textContent = 'Belum log masuk ke akaun Google.';
-                modalSyncDetail.textContent = 'Semua perubahan disimpan dalam pelayar ini (LocalStorage). Log masuk dengan Google untuk menyegerakkan kesemua 50 unit pemadam api, tetapan quotation, dan maklumat kontraktor secara masa nyata (real-time) merentas iPad, iPhone, dan PC.';
-                modalLastSyncRow.classList.add('hidden');
-
-                btnLogin.classList.remove('hidden');
-                btnManualSync.classList.add('hidden');
-                btnLogout.classList.add('hidden');
+                if (modalPill) {
+                    modalPill.textContent = 'Mod Tetamu (Simpanan Lokal)';
+                    modalPill.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+                }
+                if (modalStatus) modalStatus.textContent = 'Belum log masuk ke akaun Google.';
+                if (modalLastSyncRow) modalLastSyncRow.classList.add('hidden');
+                if (btnLogin) btnLogin.classList.remove('hidden');
+                if (btnManualSync) btnManualSync.classList.add('hidden');
+                if (btnLogout) btnLogout.classList.add('hidden');
             }
         }
 
         /**
-         * 11. INITIALIZE APPLICATION ON LOAD
+         * 12. APPLICATION BOOTSTRAP ON WINDOW LOAD
          */
-        window.addEventListener('DOMContentLoaded', () => {
+        window.onload = function () {
             initTheme();
             generatePWAAssets();
 
             const now = new Date();
-            const options = { day: '2-digit', month: 'short', year: 'numeric' };
-            const formattedToday = now.toLocaleDateString('ms-MY', options);
-            document.getElementById('today-date-badge').textContent = `Hari Ini: ${formattedToday}`;
-            document.getElementById('rfq-doc-date').textContent = `Tarikh Dokumen: ${formattedToday}`;
+            const dateDisplay = now.toLocaleDateString('ms-MY', {
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+            const todayBadge = document.getElementById('today-date-badge');
+            const rfqDocDate = document.getElementById('rfq-doc-date');
+            if (todayBadge) todayBadge.textContent = `Hari Ini: ${dateDisplay}`;
+            if (rfqDocDate) rfqDocDate.textContent = `Tarikh: ${now.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
 
             loadLocalState();
+            initMonthlyProofPicker();
             refreshAllViews();
-            setupFirebaseAuthListener();
-        });
+
+            if (firebaseAuth) {
+                firebaseAuth.onAuthStateChanged((user) => {
+                    updateAuthUI(user);
+                });
+            }
+        };
     </script>
 </body>
 </html>
