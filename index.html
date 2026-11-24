@@ -278,16 +278,22 @@
                 <div class="text-[11px] text-blue-700/80 dark:text-blue-300/80 mt-0.5" id="stat-standby-sub">Auto 50% Tong Keluar</div>
             </button>
 
-            <!-- Card 6: Aktif / Selamat -->
-            <button onclick="filterByCard('ACTIVE')" id="card-ACTIVE" class="stat-card text-left p-3.5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-transparent hover:border-emerald-400 shadow-sm hover:shadow-md transition-all">
+            <!-- Card 6: Status Lokasi Semasa (Temporary vs Lokasi Kosong) -->
+            <button onclick="filterByCard('LOC_ALERT')" id="card-LOC_ALERT" class="stat-card text-left p-3.5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-transparent hover:border-rose-500 shadow-sm hover:shadow-md transition-all">
                 <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Aktif / Selamat</span>
-                    <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                        <i class="fa-solid fa-shield-check text-xs"></i>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Status Lokasi</span>
+                    <div class="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                        <i class="fa-solid fa-location-crosshairs text-xs"></i>
                     </div>
                 </div>
-                <div class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400" id="stat-active">0</div>
-                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Sah Sehingga 2027</div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-extrabold text-blue-600 dark:text-blue-400" id="stat-loc-temp">0</span>
+                    <span class="text-[11px] font-semibold text-slate-400">Temp</span>
+                    <span class="text-slate-300 dark:text-slate-700">|</span>
+                    <span class="text-xl font-extrabold text-rose-600 dark:text-rose-400" id="stat-loc-empty">0</span>
+                    <span class="text-[11px] font-semibold text-slate-400">Kosong</span>
+                </div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5" id="stat-loc-sub">Semasa Tong Keluar</div>
             </button>
         </div>
 
@@ -335,6 +341,12 @@
                 <button onclick="quickFilterPill('REFILL_AND_SERVICE')" id="pill-REFILL_AND_SERVICE" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition shrink-0">
                     <i class="fa-solid fa-arrows-rotate mr-1"></i> Refill & Servis (2-in-1)
                 </button>
+                <button onclick="quickFilterPill('LOC_TEMP')" id="pill-LOC_TEMP" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition shrink-0">
+                    <i class="fa-solid fa-shield-halved mr-1"></i> Ganti Temporary FE
+                </button>
+                <button onclick="quickFilterPill('LOC_EMPTY')" id="pill-LOC_EMPTY" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0">
+                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Lokasi Kosong (Tiada FE)
+                </button>
                 <button onclick="quickFilterPill('ACTIVE')" id="pill-ACTIVE" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 transition shrink-0">
                     <i class="fa-solid fa-shield-check text-emerald-500 mr-1"></i> Aktif / Selamat
                 </button>
@@ -376,7 +388,10 @@
                 <!-- Status Filter -->
                 <div>
                     <select id="filter-status" onchange="renderTable()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500">
-                        <option value="ALL">Semua Status & Kerja</option>
+                        <option value="ALL">Semua Status & Lokasi</option>
+                        <option value="LOC_ALERT">Sedang Servis (Temporary / Kosong)</option>
+                        <option value="LOC_TEMP">Diganti Temporary FE Sahaja</option>
+                        <option value="LOC_EMPTY">Lokasi Kosong / Tiada FE Sahaja</option>
                         <option value="DUE_ALL">Servis Sahaja (Tamat / &le;1 Bln)</option>
                         <option value="REFILL_ONLY">Refill Sahaja (Sudah Digunakan)</option>
                         <option value="REFILL_AND_SERVICE">Refill & Servis (2-dalam-1)</option>
@@ -395,15 +410,16 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                         <tr class="bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
-                            <th class="py-3.5 px-4 font-bold">Pilih RFQ</th>
+                            <th class="py-3.5 px-3 font-bold">Pilih RFQ</th>
                             <th class="py-3.5 px-3 font-bold">No.</th>
-                            <th class="py-3.5 px-4 font-bold">Kawasan</th>
-                            <th class="py-3.5 px-4 font-bold">Tempat & Point</th>
+                            <th class="py-3.5 px-3 font-bold">Kawasan</th>
+                            <th class="py-3.5 px-3 font-bold">Tempat & Point</th>
                             <th class="py-3.5 px-3 font-bold">Berat</th>
-                            <th class="py-3.5 px-4 font-bold">Tarikh Tamat</th>
-                            <th class="py-3.5 px-4 font-bold">Status Tarikh</th>
-                            <th class="py-3.5 px-4 font-bold">Pilihan Kerja (Tick Servis / Refill / 2in1)</th>
-                            <th class="py-3.5 px-4 font-bold text-right">Tindakan</th>
+                            <th class="py-3.5 px-3 font-bold">Tarikh Tamat</th>
+                            <th class="py-3.5 px-3 font-bold">Status Tarikh</th>
+                            <th class="py-3.5 px-3 font-bold">Pilihan Kerja (RFQ)</th>
+                            <th class="py-3.5 px-3 font-bold">Status Lokasi (Semasa Servis)</th>
+                            <th class="py-3.5 px-3 font-bold text-right">Tindakan</th>
                         </tr>
                     </thead>
                         <tbody id="extinguisher-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -847,6 +863,21 @@
                     </label>
                 </div>
 
+                <!-- Pilihan Status Lokasi Semasa Tong Dibawa Keluar -->
+                <div class="p-4 rounded-xl bg-blue-50/60 dark:bg-blue-950/25 border border-blue-200 dark:border-blue-800 space-y-2.5">
+                    <p class="text-xs font-extrabold uppercase tracking-wider text-blue-900 dark:text-blue-200">
+                        Status Lokasi Semasa (Jika Tong Dibawa Keluar Servis):
+                    </p>
+                    <select id="field-location-status" class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-700 text-sm font-semibold">
+                        <option value="NORMAL">Normal (Tong Asal Berada Di Lokasi)</option>
+                        <option value="TEMP">Diganti Temporary FE (Tong Pinjaman Kontraktor)</option>
+                        <option value="EMPTY">Lokasi Kosong (Tiada Pemadam Api Sementara)</option>
+                    </select>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-400">
+                        Gunakan pilihan ini untuk memantau kawasan mana yang mempunyai tong ganti sementara dan kawasan mana yang tiada langsung pemadam api.
+                    </p>
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400 mb-1">Catatan Tambahan</label>
                     <input type="text" id="field-notes" placeholder="Cth: Baru lepas servis / Digunakan semasa latihan" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
@@ -1071,57 +1102,57 @@
          */
         const INITIAL_SCK_DATA = [
             // KILANG (1 - 44)
-            { id: 'f-1', no: '1', section: 'KILANG', kawasan: 'GUARD HOUSE', tempat: 'DINDING', point: '1', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-2', no: '2', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '5', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-3', no: '3', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '2', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-4', no: '4', section: 'KILANG', kawasan: 'OFFICE ATAS', tempat: 'DINDING', point: '3', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-5', no: '5', section: 'KILANG', kawasan: 'OFFICE ATAS', tempat: 'DINDING', point: '4', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-6', no: '6', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '1', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-7', no: '7', section: 'KILANG', kawasan: 'SAWMILL', tempat: 'DINDING', point: '1', expiry: '2026-12-18', berat: '2 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-8', no: '8', section: 'KILANG', kawasan: 'INDONESIA (D)', tempat: 'DINDING', point: '1', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-9', no: '9', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-10', no: '10', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2026-10-06', berat: '9 KG', workMode: 'AUTO', notes: 'Tamat tempoh (X) - Perlu servis segera' },
-            { id: 'f-11', no: '11', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-12', no: '12', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-13', no: '13', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-14', no: '14', section: 'KILANG', kawasan: 'INDONESIA (D)', tempat: 'DINDING', point: '2', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-15', no: '15', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '1', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-16', no: '16', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '20', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-17', no: '17', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '21', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-18', no: '18', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '22', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-19', no: '19', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '25', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-20', no: '20', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '28', expiry: '', berat: '', workMode: 'AUTO', notes: 'Bertanda (X) dalam checklist - Tiada rekod tarikh/berat' },
-            { id: 'f-21', no: '21', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '29', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-22', no: '22', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '30', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-23', no: '23', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '31', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-24', no: '24', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '34', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-25', no: '25', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '35', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-26', no: '26', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '36', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-27', no: '27', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '37', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-28', no: '28', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '38', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-29', no: '29', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '40', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-30', no: '30', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '42', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-31', no: '31', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '47', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-32', no: '32', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '2', expiry: '2026-12-18', berat: '2 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-33', no: '33', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '3', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-34', no: '34', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '4', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-35', no: '35', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '53', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-36', no: '36', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '60', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-37', no: '37', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '18', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-38', no: '38', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '20', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-39', no: '39', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '22', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-40', no: '40', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '24', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-41', no: '41', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '26', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-42', no: '42', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '28', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-43', no: '43', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '29', expiry: '2027-07-22', berat: '2 KG', workMode: 'AUTO', notes: '' },
-            { id: 'f-44', no: '44', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '31', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', notes: '' },
+            { id: 'f-1', no: '1', section: 'KILANG', kawasan: 'GUARD HOUSE', tempat: 'DINDING', point: '1', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-2', no: '2', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '5', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-3', no: '3', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '2', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-4', no: '4', section: 'KILANG', kawasan: 'OFFICE ATAS', tempat: 'DINDING', point: '3', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-5', no: '5', section: 'KILANG', kawasan: 'OFFICE ATAS', tempat: 'DINDING', point: '4', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-6', no: '6', section: 'KILANG', kawasan: 'OFFICE', tempat: 'DINDING', point: '1', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-7', no: '7', section: 'KILANG', kawasan: 'SAWMILL', tempat: 'DINDING', point: '1', expiry: '2026-12-18', berat: '2 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-8', no: '8', section: 'KILANG', kawasan: 'INDONESIA (D)', tempat: 'DINDING', point: '1', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-9', no: '9', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-10', no: '10', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2026-10-06', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: 'Tamat tempoh (X) - Perlu servis segera' },
+            { id: 'f-11', no: '11', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-12', no: '12', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-13', no: '13', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '11', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-14', no: '14', section: 'KILANG', kawasan: 'INDONESIA (D)', tempat: 'DINDING', point: '2', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-15', no: '15', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '1', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-16', no: '16', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '20', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-17', no: '17', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '21', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-18', no: '18', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '22', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-19', no: '19', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '25', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-20', no: '20', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '28', expiry: '', berat: '', workMode: 'AUTO', locationStatus: 'NORMAL', notes: 'Bertanda (X) dalam checklist - Tiada rekod tarikh/berat' },
+            { id: 'f-21', no: '21', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '29', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-22', no: '22', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '30', expiry: '2026-12-15', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-23', no: '23', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '31', expiry: '2027-10-14', berat: '2 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-24', no: '24', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '34', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-25', no: '25', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '35', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-26', no: '26', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '36', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-27', no: '27', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '37', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-28', no: '28', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '38', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-29', no: '29', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '40', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-30', no: '30', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '42', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-31', no: '31', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '47', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-32', no: '32', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '2', expiry: '2026-12-18', berat: '2 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-33', no: '33', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '3', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-34', no: '34', section: 'KILANG', kawasan: 'MOULDING', tempat: 'DINDING', point: '4', expiry: '2027-10-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-35', no: '35', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '53', expiry: '2026-12-18', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-36', no: '36', section: 'KILANG', kawasan: 'MOULDING', tempat: 'TIANG', point: '60', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-37', no: '37', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '18', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-38', no: '38', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '20', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-39', no: '39', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '22', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-40', no: '40', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '24', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-41', no: '41', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '26', expiry: '2027-09-14', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-42', no: '42', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '28', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-43', no: '43', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '29', expiry: '2027-07-22', berat: '2 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'f-44', no: '44', section: 'KILANG', kawasan: 'PACKING', tempat: 'TIANG', point: '31', expiry: '2027-07-22', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
             // HOSTEL (1 - 6)
-            { id: 'h-1', no: 'H-1', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '1', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'h-2', no: 'H-2', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '2', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'h-3', no: 'H-3', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '3', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'h-4', no: 'H-4', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '4', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'h-5', no: 'H-5', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '5', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' },
-            { id: 'h-6', no: 'H-6', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '6', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', notes: '' }
+            { id: 'h-1', no: 'H-1', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '1', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'h-2', no: 'H-2', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '2', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'h-3', no: 'H-3', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '3', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'h-4', no: 'H-4', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '4', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'h-5', no: 'H-5', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '5', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' },
+            { id: 'h-6', no: 'H-6', section: 'HOSTEL', kawasan: 'HOSTEL', tempat: 'DINDING', point: '6', expiry: '2027-08-26', berat: '9 KG', workMode: 'AUTO', locationStatus: 'NORMAL', notes: '' }
         ];
 
         // Global Application State
@@ -1150,9 +1181,14 @@
         function getStatusInfo(item) {
             const expiryDateStr = item.expiry;
             const workMode = item.workMode || 'AUTO';
+            const locStatus = item.locationStatus || 'NORMAL';
 
             let customRowHighlight = '';
-            if (workMode === 'REFILL_AND_SERVICE') {
+            if (locStatus === 'EMPTY') {
+                customRowHighlight = 'bg-rose-50/90 dark:bg-rose-950/35';
+            } else if (locStatus === 'TEMP') {
+                customRowHighlight = 'bg-sky-50/85 dark:bg-sky-950/30';
+            } else if (workMode === 'REFILL_AND_SERVICE') {
                 customRowHighlight = 'bg-purple-50/75 dark:bg-purple-950/25';
             } else if (workMode === 'REFILL_ONLY') {
                 customRowHighlight = 'bg-orange-50/75 dark:bg-orange-950/25';
@@ -1214,7 +1250,8 @@
             }
             return {
                 ...item,
-                workMode: mode
+                workMode: mode,
+                locationStatus: item.locationStatus || 'NORMAL'
             };
         }
 
@@ -1448,10 +1485,11 @@
             let serviceOnlyCount = 0;
             let refillOnlyCount = 0;
             let bothCount = 0;
-            let activeCount = 0;
             let checkCount = 0;
             let factoryCount = 0;
             let hostelCount = 0;
+            let locTempCount = 0;
+            let locEmptyCount = 0;
 
             extinguishers.forEach(item => {
                 if (item.section === 'HOSTEL') hostelCount++;
@@ -1459,6 +1497,10 @@
 
                 const st = getStatusInfo(item);
                 const mode = item.workMode || 'AUTO';
+                const locStatus = item.locationStatus || 'NORMAL';
+
+                if (locStatus === 'TEMP') locTempCount++;
+                if (locStatus === 'EMPTY') locEmptyCount++;
 
                 if (mode === 'REFILL_AND_SERVICE') {
                     bothCount++;
@@ -1469,9 +1511,7 @@
                 } else {
                     if (st.code === 'EXPIRED' || st.code === 'REMINDER') {
                         serviceOnlyCount++;
-                    } else if (st.code === 'ACTIVE') {
-                        activeCount++;
-                    } else {
+                    } else if (st.code !== 'ACTIVE') {
                         checkCount++;
                     }
                 }
@@ -1487,52 +1527,65 @@
             document.getElementById('stat-refill-service').textContent = bothCount;
             document.getElementById('stat-standby').textContent = rfqCounts.standbyTotal;
             document.getElementById('stat-standby-sub').textContent = `${rfqCounts.standby9}x 9KG, ${rfqCounts.standby2}x 2KG`;
-            document.getElementById('stat-active').textContent = activeCount;
+            document.getElementById('stat-loc-temp').textContent = locTempCount;
+            document.getElementById('stat-loc-empty').textContent = locEmptyCount;
+            document.getElementById('stat-loc-sub').textContent = `${locTempCount} Temporary, ${locEmptyCount} Kosong`;
 
             document.getElementById('banner-alert-text').innerHTML = 
                 `Keluar: <strong class="text-red-600 dark:text-red-400">${rfqCounts.service9 + rfqCounts.service2} Servis</strong> &bull; ` +
                 `<strong class="text-orange-600 dark:text-orange-400">${rfqCounts.refill9 + rfqCounts.refill2} Refill</strong> &bull; ` +
                 `<strong class="text-purple-600 dark:text-purple-400">${rfqCounts.both9 + rfqCounts.both2} 2-in-1</strong> &rarr; ` +
-                `Standby FE (50%): <strong class="text-blue-700 dark:text-blue-300">${rfqCounts.standbyTotal} unit</strong>.`;
+                `Lokasi Semasa: <strong class="text-blue-600 dark:text-blue-400">${locTempCount} Ganti Temporary</strong>, ` +
+                `<strong class="text-rose-600 dark:text-rose-400">${locEmptyCount} Kosong (Tiada FE)</strong>.`;
         }
 
-        function filterByCard(cardType) {
-            currentCardFilter = cardType;
-            
-            document.querySelectorAll('.stat-card').forEach(btn => {
-                btn.classList.remove('border-slate-900', 'dark:border-slate-400', 'ring-2', 'ring-red-500/30');
-                if (btn.id !== 'card-STANDBY') {
-                    btn.classList.add('border-transparent');
+        function filterByCard(statusCode) {
+            switchTab('monitor');
+            currentCardFilter = statusCode;
+            document.getElementById('filter-status').value = statusCode;
+
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.classList.remove('border-slate-900', 'dark:border-slate-400', 'ring-2', 'ring-red-500/30');
+                if (card.id !== 'card-STANDBY') {
+                    card.classList.add('border-transparent');
                 }
             });
-            const activeBtn = document.getElementById(`card-${cardType}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('border-transparent');
-                activeBtn.classList.add('border-slate-900', 'dark:border-slate-400');
+
+            const activeCard = document.getElementById(`card-${statusCode}`);
+            if (activeCard && statusCode !== 'STANDBY') {
+                activeCard.classList.remove('border-transparent');
+                activeCard.classList.add('border-slate-900', 'dark:border-slate-400', 'ring-2', 'ring-red-500/30');
             }
 
-            const statusDropdown = document.getElementById('filter-status');
-            statusDropdown.value = cardType;
-            syncFilterPills(cardType);
+            syncQuickPills(statusCode);
             renderTable();
         }
 
         function quickFilterPill(statusCode) {
             document.getElementById('filter-status').value = statusCode;
-            syncFilterPills(statusCode);
+            syncQuickPills(statusCode);
             renderTable();
         }
 
-        function syncFilterPills(activeCode) {
+        function syncQuickPills(activeCode) {
             document.querySelectorAll('.filter-pill').forEach(pill => {
-                pill.classList.remove('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
-                pill.classList.add('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300');
+                const isMatch = pill.id === `pill-${activeCode}`;
+                if (isMatch) {
+                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition shrink-0';
+                } else if (pill.id === 'pill-DUE_ALL') {
+                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/60 hover:bg-red-50 dark:hover:bg-red-950/40 transition shrink-0';
+                } else if (pill.id === 'pill-REFILL_ONLY') {
+                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/60 hover:bg-orange-50 dark:hover:bg-orange-950/40 transition shrink-0';
+                } else if (pill.id === 'pill-REFILL_AND_SERVICE') {
+                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition shrink-0';
+                } else if (pill.id === 'pill-LOC_TEMP') {
+                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition shrink-0';
+                } else if (pill.id === 'pill-LOC_EMPTY') {
+                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0';
+                } else {
+                    pill.className = 'filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 transition shrink-0';
+                }
             });
-            const target = document.getElementById(`pill-${activeCode}`);
-            if (target) {
-                target.classList.remove('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300');
-                target.classList.add('bg-slate-900', 'text-white', 'dark:bg-white', 'dark:text-slate-900');
-            }
         }
 
         async function toggleItemWorkMode(id, targetMode) {
@@ -1546,21 +1599,68 @@
                 if (st.code !== 'EXPIRED' && st.code !== 'REMINDER') {
                     selectedForRFQ.delete(item.id);
                 }
-                showToast(`Pilihan khas dibatalkan untuk No. ${item.no} (${item.kawasan}).`, 'info');
+                showToast(`Pilihan kerja khas bagi No. ${item.no} (${item.kawasan}) telah dibatalkan.`, 'info');
             } else {
                 item.workMode = targetMode;
                 selectedForRFQ.add(item.id);
-                if (targetMode === 'REFILL_AND_SERVICE') {
-                    showToast(`No. ${item.no} (${item.kawasan}) ditanda "Refill & Servis (2-in-1)" & dikira dalam Standby 50%.`, 'success');
+                if (targetMode === 'SERVICE_ONLY') {
+                    showToast(`No. ${item.no} (${item.kawasan}) ditanda untuk Servis Sahaja.`, 'info');
                 } else if (targetMode === 'REFILL_ONLY') {
-                    showToast(`No. ${item.no} (${item.kawasan}) ditanda "Refill Sahaja" & dikira dalam Standby 50%.`, 'warning');
-                } else if (targetMode === 'SERVICE_ONLY') {
-                    showToast(`No. ${item.no} (${item.kawasan}) ditanda "Servis Sahaja" & dikira dalam Standby 50%.`, 'info');
+                    showToast(`No. ${item.no} (${item.kawasan}) ditanda Sudah Digunakan (Refill Sahaja).`, 'warning');
+                } else if (targetMode === 'REFILL_AND_SERVICE') {
+                    showToast(`No. ${item.no} (${item.kawasan}) ditanda Refill & Servis (2-in-1).`, 'success');
                 }
             }
 
             refreshAllViews();
             await persistData(false);
+        }
+
+        async function toggleLocationStatus(id, targetLocStatus) {
+            const item = extinguishers.find(x => x.id === id);
+            if (!item) return;
+
+            const currentLoc = item.locationStatus || 'NORMAL';
+            if (currentLoc === targetLocStatus) {
+                item.locationStatus = 'NORMAL';
+                showToast(`Status lokasi No. ${item.no} (${item.kawasan}) dipulihkan ke Normal.`, 'info');
+            } else {
+                item.locationStatus = targetLocStatus;
+                if (targetLocStatus === 'TEMP') {
+                    showToast(`No. ${item.no} (${item.kawasan} Pt.${item.point}) ditanda "Diganti Temporary FE".`, 'info');
+                } else if (targetLocStatus === 'EMPTY') {
+                    showToast(`AMARAN: Lokasi No. ${item.no} (${item.kawasan} Pt.${item.point}) ditanda "KOSONG (Tiada FE)".`, 'warning');
+                }
+            }
+
+            refreshAllViews();
+            await persistData(false);
+        }
+
+        function markServiceCompleted(id) {
+            const item = extinguishers.find(x => x.id === id);
+            if (!item) return;
+
+            const today = new Date();
+            const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+            const yyyy = nextYear.getFullYear();
+            const mm = String(nextYear.getMonth() + 1).padStart(2, '0');
+            const dd = String(nextYear.getDate()).padStart(2, '0');
+            const defaultNewExpiry = `${yyyy}-${mm}-${dd}`;
+
+            openConfirmDialog(
+                `Sahkan Siap Servis - No. ${item.no} (${item.kawasan})?`,
+                `Tong asal akan dipulangkan ke lokasi (${item.tempat} Pt.${item.point}), status Temporary/Kosong dipadam, pilihan Refill/2in1 dibersihkan, dan tarikh tamat tempoh dikemaskini ke ${dd}/${mm}/${yyyy} (+1 Tahun).`,
+                async () => {
+                    item.locationStatus = 'NORMAL';
+                    item.workMode = 'AUTO';
+                    item.expiry = defaultNewExpiry;
+                    selectedForRFQ.delete(item.id);
+                    refreshAllViews();
+                    await persistData(true);
+                    showToast(`Selesai! No. ${item.no} (${item.kawasan}) kini aktif semula hingga ${dd}/${mm}/${yyyy}.`, 'success');
+                }
+            );
         }
 
         function renderTable() {
@@ -1576,6 +1676,7 @@
             const filtered = extinguishers.filter(item => {
                 const st = getStatusInfo(item);
                 const mode = item.workMode || 'AUTO';
+                const locStatus = item.locationStatus || 'NORMAL';
 
                 const matchSearch = !searchQuery || 
                     item.no.toLowerCase().includes(searchQuery) ||
@@ -1591,7 +1692,13 @@
                     item.berat === weightFilter;
 
                 let matchStatus = true;
-                if (statusFilter === 'DUE_ALL') {
+                if (statusFilter === 'LOC_ALERT') {
+                    matchStatus = (locStatus === 'TEMP' || locStatus === 'EMPTY');
+                } else if (statusFilter === 'LOC_TEMP') {
+                    matchStatus = (locStatus === 'TEMP');
+                } else if (statusFilter === 'LOC_EMPTY') {
+                    matchStatus = (locStatus === 'EMPTY');
+                } else if (statusFilter === 'DUE_ALL') {
                     matchStatus = (mode === 'SERVICE_ONLY' || (mode === 'AUTO' && (st.code === 'EXPIRED' || st.code === 'REMINDER')));
                 } else if (statusFilter === 'REFILL_ONLY') {
                     matchStatus = (mode === 'REFILL_ONLY');
@@ -1616,6 +1723,7 @@
                 const st = getStatusInfo(item);
                 const isChecked = selectedForRFQ.has(item.id);
                 const mode = item.workMode || 'AUTO';
+                const locStatus = item.locationStatus || 'NORMAL';
 
                 let weightBadge = `<span class="text-xs text-slate-400 italic">Tiada</span>`;
                 if (item.berat === '9 KG') {
@@ -1629,42 +1737,64 @@
                 const isBothChecked = mode === 'REFILL_AND_SERVICE';
 
                 const workTickControls = `
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition select-none ${isServiceChecked ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'}">
+                    <div class="flex flex-wrap items-center gap-1">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isServiceChecked ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'}">
                             <input type="checkbox" ${isServiceChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'SERVICE_ONLY')" class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-0">
                             <span>Servis</span>
                         </label>
-                        <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition select-none ${isRefillChecked ? 'bg-orange-600 text-white border-orange-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-orange-400'}">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isRefillChecked ? 'bg-orange-600 text-white border-orange-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-orange-400'}">
                             <input type="checkbox" ${isRefillChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_ONLY')" class="w-3.5 h-3.5 rounded text-orange-600 focus:ring-0">
                             <span>Refill</span>
                         </label>
-                        <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border transition select-none ${isBothChecked ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-purple-400'}">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isBothChecked ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-purple-400'}">
                             <input type="checkbox" ${isBothChecked ? 'checked' : ''} onchange="toggleItemWorkMode('${item.id}', 'REFILL_AND_SERVICE')" class="w-3.5 h-3.5 rounded text-purple-600 focus:ring-0">
                             <span>2in1</span>
                         </label>
                     </div>
                 `;
 
+                const isTempChecked = locStatus === 'TEMP';
+                const isEmptyChecked = locStatus === 'EMPTY';
+
+                const locationStatusControls = `
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isTempChecked ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-400'}" title="Tong asal sedang diservis & diganti dengan Temporary FE">
+                            <input type="checkbox" ${isTempChecked ? 'checked' : ''} onchange="toggleLocationStatus('${item.id}', 'TEMP')" class="w-3.5 h-3.5 rounded text-sky-600 focus:ring-0">
+                            <span>Temporary</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer border transition select-none ${isEmptyChecked ? 'bg-rose-600 text-white border-rose-600 shadow-sm animate-pulse' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-rose-400'}" title="Lokasi ini kosong (tiada satu pun pemadam api buat sementara waktu)">
+                            <input type="checkbox" ${isEmptyChecked ? 'checked' : ''} onchange="toggleLocationStatus('${item.id}', 'EMPTY')" class="w-3.5 h-3.5 rounded text-rose-600 focus:ring-0">
+                            <span>Kosong</span>
+                        </label>
+                        ${(isTempChecked || isEmptyChecked || mode !== 'AUTO') ? `
+                            <button onclick="markServiceCompleted('${item.id}')" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition" title="Klik apabila tong telah siap diservis & dipulangkan ke lokasi">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Siap</span>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-slate-50 dark:hover:bg-slate-800/50 transition ${st.rowClass}`;
                 tr.innerHTML = `
-                    <td class="py-3 px-4">
+                    <td class="py-3 px-3">
                         <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRFQSelection('${item.id}')" class="w-5 h-5 rounded-md text-red-600 focus:ring-red-500 border-slate-300 dark:border-slate-600 cursor-pointer">
                     </td>
                     <td class="py-3 px-3 font-extrabold text-slate-900 dark:text-white whitespace-nowrap">${item.no}</td>
-                    <td class="py-3 px-4">
+                    <td class="py-3 px-3">
                         <div class="font-bold text-slate-900 dark:text-white">${item.kawasan}</div>
                         <div class="text-[11px] text-slate-500 dark:text-slate-400">${item.section}</div>
                     </td>
-                    <td class="py-3 px-4">
+                    <td class="py-3 px-3 whitespace-nowrap">
                         <span class="font-medium text-slate-700 dark:text-slate-300">${item.tempat}</span>
-                        <span class="ml-1.5 px-2 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">Pt. ${item.point}</span>
+                        <span class="ml-1 px-2 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200">Pt. ${item.point}</span>
                     </td>
                     <td class="py-3 px-3 whitespace-nowrap">${weightBadge}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                    <td class="py-3 px-3 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         ${formatDisplayDate(item.expiry)}
                     </td>
-                    <td class="py-3 px-4">
+                    <td class="py-3 px-3">
                         <div class="flex flex-wrap items-center gap-1.5">
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs ${st.badgeClass}">
                                 <i class="fa-solid ${st.icon}"></i>
@@ -1673,10 +1803,13 @@
                         </div>
                         ${item.notes ? `<div class="text-xs text-slate-500 dark:text-slate-400 mt-1">${item.notes}</div>` : ''}
                     </td>
-                    <td class="py-3 px-4 whitespace-nowrap">
+                    <td class="py-3 px-3 whitespace-nowrap">
                         ${workTickControls}
                     </td>
-                    <td class="py-3 px-4 text-right whitespace-nowrap">
+                    <td class="py-3 px-3 whitespace-nowrap">
+                        ${locationStatusControls}
+                    </td>
+                    <td class="py-3 px-3 text-right whitespace-nowrap">
                         <div class="inline-flex items-center gap-1.5">
                             <button onclick="openItemModal('${item.id}')" class="p-2 rounded-lg bg-slate-100 hover:bg-blue-100 dark:bg-slate-800 dark:hover:bg-blue-900/40 text-slate-600 hover:text-blue-600 dark:text-slate-300 transition" title="Edit Rekod">
                                 <i class="fa-solid fa-pen-to-square"></i>
@@ -2046,6 +2179,7 @@
                 document.getElementById('field-manual-service').checked = (mode === 'SERVICE_ONLY');
                 document.getElementById('field-is-used').checked = (mode === 'REFILL_ONLY');
                 document.getElementById('field-also-service').checked = (mode === 'REFILL_AND_SERVICE');
+                document.getElementById('field-location-status').value = item.locationStatus || 'NORMAL';
                 document.getElementById('field-notes').value = item.notes || '';
             } else {
                 title.textContent = 'Tambah Unit Pemadam Api Baru';
@@ -2053,6 +2187,7 @@
                 document.getElementById('field-manual-service').checked = false;
                 document.getElementById('field-is-used').checked = false;
                 document.getElementById('field-also-service').checked = false;
+                document.getElementById('field-location-status').value = 'NORMAL';
             }
 
             modal.classList.remove('hidden');
@@ -2091,6 +2226,7 @@
                 berat: document.getElementById('field-berat').value,
                 expiry: document.getElementById('field-expiry').value,
                 workMode: workMode,
+                locationStatus: document.getElementById('field-location-status').value || 'NORMAL',
                 notes: document.getElementById('field-notes').value.trim()
             };
 
